@@ -12,7 +12,7 @@ export async function checkWebGPU(): Promise<boolean> {
   if (!('gpu' in navigator)) return false;
 
   try {
-    const gpu = navigator.gpu;
+    const gpu = (navigator as unknown as { gpu: { requestAdapter(): Promise<unknown> } }).gpu;
     if (!gpu) return false;
 
     const adapter = await gpu.requestAdapter();

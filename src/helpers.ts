@@ -114,11 +114,11 @@ export function attachToElements(
     }
   };
 
-  input.addEventListener('keydown', keydownHandler);
+  input.addEventListener('keydown', keydownHandler as EventListener);
 
   // Return cleanup function
   return () => {
-    input.removeEventListener('keydown', keydownHandler);
+    input.removeEventListener('keydown', keydownHandler as EventListener);
   };
 }
 
