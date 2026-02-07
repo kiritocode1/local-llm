@@ -312,15 +312,19 @@
 
       <label for="model-select">Model</label>
       <select id="model-select">
-        <optgroup label="WebLLM Models">
-          <option value="webllm:phi-3.5-mini">Phi 3.5 Mini (2.5GB)</option>
-          <option value="webllm:qwen-0.5b">Qwen 0.5B (350MB)</option>
-          <option value="webllm:tinyllama">TinyLlama 1.1B (700MB)</option>
+        <optgroup label="WebLLM Models (WebGPU)">
+          <option value="webllm:phi-3.5-mini">Phi 3.5 Mini (~3.7GB)</option>
+          <option value="webllm:qwen-2.5-0.5b">Qwen 2.5 0.5B (~945MB)</option>
+          <option value="webllm:qwen-2.5-1.5b">Qwen 2.5 1.5B (~1.6GB)</option>
+          <option value="webllm:smollm2-135m">SmolLM2 135M (~360MB)</option>
+          <option value="webllm:smollm2-360m">SmolLM2 360M (~376MB)</option>
+          <option value="webllm:llama-3.2-1b">Llama 3.2 1B (~880MB)</option>
         </optgroup>
-        <optgroup label="Transformers.js Models">
-          <option value="transformers:qwen-0.5b">Qwen 0.5B (350MB)</option>
-          <option value="transformers:smollm-135m">SmolLM 135M (100MB)</option>
-          <option value="transformers:smollm-360m">SmolLM 360M (250MB)</option>
+        <optgroup label="Transformers.js Models (WASM/WebGPU)">
+          <option value="transformers:qwen-2.5-0.5b">Qwen 2.5 0.5B (~350MB)</option>
+          <option value="transformers:smollm2-135m">SmolLM2 135M (~100MB)</option>
+          <option value="transformers:smollm2-360m">SmolLM2 360M (~250MB)</option>
+          <option value="transformers:tinyllama">TinyLlama 1.1B (~700MB)</option>
         </optgroup>
       </select>
 
