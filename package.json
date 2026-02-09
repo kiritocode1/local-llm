@@ -1,6 +1,6 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
   "type": "module",
   "main": "./dist/index.js",
@@ -34,9 +34,10 @@
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
     "clean": "rm -rf dist",
-    "build:js": "bun build ./src/index.ts ./src/react/index.tsx --outdir ./dist --format esm --sourcemap --splitting --external react --external react-dom",
+    "build:js": "bun build ./src/index.ts --outfile ./dist/index.js --format esm --external react --external react-dom && bun build ./src/react/index.tsx --outfile ./dist/react/index.js --format esm --external react --external react-dom",
+    "postbuild": "mkdir -p dist/react && cp node_modules/@huggingface/transformers/dist/*.wasm dist/ && cp node_modules/onnxruntime-web/dist/*.mjs dist/ && cp node_modules/onnxruntime-web/dist/*.wasm dist/ && cp dist/*.wasm dist/react/ 2>/dev/null || true && cp dist/*.mjs dist/react/ 2>/dev/null || true",
     "build:types": "tsc -p tsconfig.build.json",
-    "build": "bun run clean && bun run build:js && bun run build:types",
+    "build": "bun run clean && bun run build:js && bun run postbuild && bun run build:types",
     "prepublishOnly": "bun run build",
     "demo": "bunx serve . -p 3000",
     "typecheck": "tsc --noEmit",
@@ -62,11 +63,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/blank-utils/llm"
+    "url": "git+https://github.com/kiritocode1/local-llm.git"
   },
-  "homepage": "https://github.com/blank-utils/llm#readme",
+  "homepage": "https://github.com/kiritocode1/local-llm#readme",
   "bugs": {
-    "url": "https://github.com/blank-utils/llm/issues"
+    "url": "https://github.com/kiritocode1/local-llm/issues"
   },
   "publishConfig": {
     "access": "public"

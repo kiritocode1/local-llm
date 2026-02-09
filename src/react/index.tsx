@@ -49,9 +49,7 @@ import type {
 
 import { createLLM, type LocalLLM } from '../core';
 
-// Re-export types for convenience
-export type { ChatMessage, GenerateOptions, LoadProgress, Backend } from '../types';
-export type { LocalLLM } from '../core';
+
 
 // ============================================================================
 // Context Types
@@ -131,7 +129,7 @@ export interface LLMProviderProps extends Omit<LLMConfig, 'onLoadProgress'> {
  * </LLMProvider>
  * ```
  */
-export function LLMProvider({
+function LLMProvider({
   children,
   autoLoad = true,
   onLoad,
@@ -240,7 +238,7 @@ export function LLMProvider({
  * const { llm, isReady, loadProgress } = useLLM();
  * ```
  */
-export function useLLM(): LLMContextValue {
+function useLLM(): LLMContextValue {
   const context = useContext(LLMContext);
 
   if (!context) {
@@ -370,7 +368,7 @@ export interface UseChatReturn {
  * }
  * ```
  */
-export function useChat(options: UseChatOptions = {}): UseChatReturn {
+function useChat(options: UseChatOptions = {}): UseChatReturn {
   const { llm, isReady, isLoading } = useLLM();
 
   const {
@@ -616,7 +614,7 @@ export interface UseStreamReturn {
  * }
  * ```
  */
-export function useStream(options: UseStreamOptions = {}): UseStreamReturn {
+function useStream(options: UseStreamOptions = {}): UseStreamReturn {
   const { llm, isReady } = useLLM();
   const { generateOptions, onToken, onFinish, onError } = options;
 
@@ -719,7 +717,7 @@ export interface UseCompletionReturn {
  * }
  * ```
  */
-export function useCompletion(
+function useCompletion(
   options: UseCompletionOptions = {}
 ): UseCompletionReturn {
   const { llm, isReady } = useLLM();
@@ -784,7 +782,7 @@ export interface LLMLoadingProps {
  * </LLMLoading>
  * ```
  */
-export function LLMLoading({ children, className }: LLMLoadingProps) {
+function LLMLoading({ children, className }: LLMLoadingProps) {
   const { isLoading, loadProgress } = useLLM();
 
   if (!isLoading) return null;
@@ -823,7 +821,7 @@ export interface LLMReadyProps {
  * </LLMReady>
  * ```
  */
-export function LLMReady({ children, fallback = null }: LLMReadyProps) {
+function LLMReady({ children, fallback = null }: LLMReadyProps) {
   const { isReady, isLoading } = useLLM();
 
   if (isLoading || !isReady) {
@@ -832,3 +830,13 @@ export function LLMReady({ children, fallback = null }: LLMReadyProps) {
 
   return <>{children}</>;
 }
+
+export {
+  LLMProvider,
+  useLLM,
+  useChat,
+  useStream,
+  useCompletion,
+  LLMLoading,
+  LLMReady,
+};
