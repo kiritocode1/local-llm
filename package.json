@@ -11,9 +11,17 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./react": {
+      "import": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
+    },
     "./src": {
       "import": "./src/index.ts",
       "types": "./src/index.ts"
+    },
+    "./src/react": {
+      "import": "./src/react/index.tsx",
+      "types": "./src/react/index.tsx"
     }
   },
   "files": [
@@ -22,7 +30,7 @@
   ],
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --format esm --sourcemap",
+    "build": "bun build ./src/index.ts ./src/react/index.tsx --outdir ./dist --format esm --sourcemap --splitting --external react",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
     "demo": "bunx serve . -p 3000",
     "typecheck": "tsc --noEmit"
@@ -35,16 +43,26 @@
     "webllm",
     "transformers",
     "local",
-    "inference"
+    "inference",
+    "react",
+    "hooks"
   ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^19.2.3",
     "@webgpu/types": "^0.1.69"
   },
   "peerDependencies": {
+    "react": "^18 || ^19",
     "typescript": "^5"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",

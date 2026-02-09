@@ -34,7 +34,7 @@ export type {
   LoadProgress,
   LoadProgressCallback,
   GenerateOptions,
-  LLMProvider,
+  LLMProvider as LLMProviderInterface,
   AttachOptions,
   BrowserCapabilities,
 } from './types';
@@ -274,3 +274,37 @@ export async function isWebGPUSupported(): Promise<boolean> {
 
 // Default export
 export default createLLM;
+
+// ============================================================================
+// React Integration (tree-shakeable re-exports)
+// ============================================================================
+// These are re-exported for convenience but can also be imported directly from
+// 'local-llm/react' for smaller bundle sizes when not using all features.
+
+export {
+  // Context
+  LLMProvider,
+  useLLM,
+  
+  // Hooks
+  useChat,
+  useStream,
+  useCompletion,
+  
+  // Components
+  LLMLoading,
+  LLMReady,
+  
+  // Types
+  type LLMContextValue,
+  type LLMProviderProps,
+  type UseChatOptions,
+  type UseChatReturn,
+  type UseStreamOptions,
+  type UseStreamReturn,
+  type UseCompletionOptions,
+  type UseCompletionReturn,
+  type LLMLoadingProps,
+  type LLMReadyProps,
+} from './react';
+
