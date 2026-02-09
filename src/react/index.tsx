@@ -28,6 +28,7 @@
  * ```
  */
 
+import * as React from 'react';
 import {
   createContext,
   useContext,
@@ -36,7 +37,6 @@ import {
   useEffect,
   useMemo,
   useRef,
-  type ReactNode,
 } from 'react';
 
 import type {
@@ -47,7 +47,11 @@ import type {
   Backend,
 } from '../types';
 
-import { createLLM, type LocalLLM } from '../index';
+import { createLLM, type LocalLLM } from '../core';
+
+// Re-export types for convenience
+export type { ChatMessage, GenerateOptions, LoadProgress, Backend } from '../types';
+export type { LocalLLM } from '../core';
 
 // ============================================================================
 // Context Types
@@ -89,7 +93,7 @@ const LLMContext = createContext<LLMContextValue | null>(null);
 // ============================================================================
 
 export interface LLMProviderProps extends Omit<LLMConfig, 'onLoadProgress'> {
-  children: ReactNode;
+  children: React.ReactNode;
 
   /**
    * Auto-load the model on mount
@@ -764,7 +768,7 @@ export function useCompletion(
 
 export interface LLMLoadingProps {
   /** Custom loading UI */
-  children?: ReactNode;
+  children?: React.ReactNode;
 
   /** Class name for the wrapper */
   className?: string;
@@ -803,10 +807,10 @@ export function LLMLoading({ children, className }: LLMLoadingProps) {
 
 export interface LLMReadyProps {
   /** Content to show when ready */
-  children: ReactNode;
+  children: React.ReactNode;
 
   /** Content to show while loading */
-  fallback?: ReactNode;
+  fallback?: React.ReactNode;
 }
 
 /**
