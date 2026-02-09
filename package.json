@@ -1,8 +1,8 @@
 {
-  "name": "local-llm",
+  "name": "@blank-utils/llm",
   "version": "0.1.0",
-  "description": "Run LLMs directly in your browser with WebGPU acceleration",
-  "module": "./src/index.ts",
+  "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
+  "module": "./dist/index.js",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
@@ -14,24 +14,17 @@
     "./react": {
       "import": "./dist/react/index.js",
       "types": "./dist/react/index.d.ts"
-    },
-    "./src": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
-    },
-    "./src/react": {
-      "import": "./src/react/index.tsx",
-      "types": "./src/react/index.tsx"
     }
   },
   "files": [
     "dist",
-    "src"
+    "README.md"
   ],
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
     "build": "bun build ./src/index.ts ./src/react/index.tsx --outdir ./dist --format esm --sourcemap --splitting --external react",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "prepublishOnly": "pnpm build",
     "demo": "bunx serve . -p 3000",
     "typecheck": "tsc --noEmit"
   },
@@ -45,10 +38,23 @@
     "local",
     "inference",
     "react",
-    "hooks"
+    "hooks",
+    "streaming",
+    "chat"
   ],
-  "author": "",
+  "author": "blank",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blank-utils/llm"
+  },
+  "homepage": "https://github.com/blank-utils/llm#readme",
+  "bugs": {
+    "url": "https://github.com/blank-utils/llm/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^18.3.28",
@@ -69,3 +75,4 @@
     "@mlc-ai/web-llm": "^0.2.80"
   }
 }
+

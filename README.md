@@ -1,168 +1,230 @@
-# 🧠 Local LLM
+# @blank-utils/llm
 
-Run Large Language Models directly in your browser with WebGPU acceleration. Zero server, full privacy.
+> Run LLMs directly in your browser with WebGPU acceleration
 
-## Features
+A simple, ergonomic library for running local LLMs in the browser. Features:
 
-- **🔒 Privacy First** - All inference happens locally, no data sent to servers
-- **⚡ WebGPU Acceleration** - Near-native performance with GPU support
-- **🔄 Auto-Fallback** - Gracefully falls back to WASM when WebGPU unavailable
-- **📦 Zero Config** - Works out of the box with sensible defaults
-- **🎯 Simple API** - Just 3 lines to start chatting
-- **🖥️ DOM Helpers** - Easy integration with input elements
+- 🚀 **WebGPU acceleration** via WebLLM (with WASM fallback)
+- ⚛️ **React hooks** with eager background loading
+- 📝 **Streaming support** with real-time token output
+- 🔄 **Message queueing** - users can type while models load
+- 📦 **Zero config** - works out of the box
+
+## Installation
+
+```bash
+pnpm add @blank-utils/llm
+# or
+npm install @blank-utils/llm
+# or
+bun add @blank-utils/llm
+```
 
 ## Quick Start
 
-```bash
-bun add local-llm
-# or
-pnpm add local-llm
+### React (Recommended)
+
+```tsx
+import { LLMProvider, useChat, useLLM } from "@blank-utils/llm/react";
+
+function App() {
+  return (
+    <LLMProvider model="qwen-2.5-0.5b">
+      <Chat />
+    </LLMProvider>
+  );
+}
+
+function Chat() {
+  const { isLoading, loadProgress } = useLLM();
+  const {
+    messages,
+    input,
+    setInput,
+    send,
+    isGenerating,
+    isPending,
+    streamingText,
+  } = useChat();
+
+  return (
+    <div>
+      {isLoading && <p>Loading: {loadProgress?.progress}%</p>}
+
+      {messages.map((m, i) => (
+        <div key={i}>
+          {m.role}: {m.content}
+        </div>
+      ))}
+
+      {isPending && <p>Waiting for model...</p>}
+      {isGenerating && <p>AI: {streamingText}</p>}
+
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && send()}
+        placeholder="Type a message..."
+      />
+      <button onClick={() => send()}>Send</button>
+    </div>
+  );
+}
 ```
 
-```typescript
-import { createLLM } from "local-llm";
+### Vanilla JavaScript
 
-// Create and load model (auto-selects best backend)
+```typescript
+import { createLLM } from "@blank-utils/llm";
+
 const llm = await createLLM({
-  onLoadProgress: (p) => console.log(`${p.progress}% - ${p.status}`),
+  model: "qwen-2.5-0.5b",
+  onLoadProgress: (p) => console.log(`Loading: ${p.progress}%`),
 });
 
-// Chat with streaming
+// Streaming
 await llm.stream("Tell me a joke", (token) => {
   process.stdout.write(token);
 });
 
-// Or attach directly to DOM elements
-llm.attachToInput("#chat-input", "#chat-output");
+// Or non-streaming
+const response = await llm.chat("Hello!");
 ```
 
-## Supported Backends
+## React Hooks
 
-### WebLLM (Primary)
+### `LLMProvider`
 
-Uses MLC's WebLLM for high-performance WebGPU inference.
+Wrap your app with the provider to enable LLM functionality:
 
-**Supported Models:**
+```tsx
+<LLMProvider
+  model="qwen-2.5-0.5b" // Model to load
+  backend="auto" // 'webllm' | 'transformers' | 'auto'
+  autoLoad={true} // Start loading immediately
+  onProgress={(p) => {}} // Loading progress callback
+  onLoad={(llm) => {}} // Called when ready
+  onError={(err) => {}} // Error callback
+>
+  {children}
+</LLMProvider>
+```
 
-- `phi-3.5-mini` - Phi 3.5 Mini (~2.5GB)
-- `llama-3.1-8b` - Llama 3.1 8B (~4GB)
-- `qwen-0.5b` - Qwen 0.5B (~350MB)
-- `tinyllama` - TinyLlama 1.1B (~700MB)
+### `useLLM()`
 
-### Transformers.js (Fallback)
+Access the LLM instance and loading state:
 
-Uses HuggingFace Transformers.js with ONNX runtime.
+```tsx
+const {
+  llm, // LLM instance (null while loading)
+  isLoading, // Model is downloading
+  isReady, // Model ready for inference
+  loadProgress, // { progress: number, status: string }
+  error, // Error if failed
+  modelId, // Current model ID
+  backend, // 'webllm' | 'transformers'
+  reload, // Reload the model
+  unload, // Unload and free memory
+} = useLLM();
+```
 
-**Supported Models:**
+### `useChat(options)`
 
-- `qwen-0.5b` - Qwen 0.5B (~350MB)
-- `smollm-135m` - SmolLM 135M (~100MB)
-- `smollm-360m` - SmolLM 360M (~250MB)
+Full chat conversation management with **eager loading** support:
 
-## API Reference
-
-### `createLLM(config?)`
-
-Creates a new LLM instance with the specified configuration.
-
-```typescript
-const llm = await createLLM({
-  // Model alias or full ID
-  model: "phi-3.5-mini",
-
-  // 'auto' | 'webllm' | 'transformers'
-  backend: "auto",
-
-  // 'auto' | 'webgpu' | 'wasm'
-  device: "auto",
-
-  // System prompt for all conversations
+```tsx
+const {
+  messages, // ChatMessage[]
+  input, // Current input value
+  setInput, // Update input
+  send, // Send message (queues if loading!)
+  isGenerating, // Currently generating response
+  isPending, // Message queued, waiting for model
+  streamingText, // Current streaming output
+  stop, // Stop generation
+  clear, // Clear conversation
+  append, // Add message without generating
+  reload, // Regenerate last response
+} = useChat({
   systemPrompt: "You are a helpful assistant.",
-
-  // Loading progress callback
-  onLoadProgress: (progress) => {
-    console.log(`${progress.progress}% - ${progress.status}`);
-  },
+  queueWhileLoading: true, // Queue messages while model loads
+  onToken: (token, fullText) => {},
+  onFinish: (response) => {},
 });
 ```
 
-### `llm.chat(messages, options?)`
+### `useStream(options)`
 
-Generate a response (non-streaming).
+Simple streaming generation:
 
-```typescript
-const response = await llm.chat("What is 2+2?");
-// or with message array
-const response = await llm.chat([{ role: "user", content: "What is 2+2?" }]);
+```tsx
+const { text, isStreaming, stream, stop, clear } = useStream();
+
+await stream("Tell me a story");
 ```
 
-### `llm.stream(messages, onToken, options?)`
+### `useCompletion(options)`
 
-Generate with streaming output.
+Non-streaming completion:
 
-```typescript
-await llm.stream("Tell me a story", (token, fullText) => {
-  console.log(token); // Individual token
-  updateUI(fullText); // Full response so far
-});
+```tsx
+const { completion, isLoading, complete, clear } = useCompletion();
+
+await complete("Summarize this text");
 ```
 
-### `llm.attachToInput(inputSelector, outputSelector, options?)`
+## Utility Components
 
-Attach to DOM elements for automatic handling.
+### `<LLMLoading>`
 
-```typescript
-const cleanup = llm.attachToInput("#input", "#output", {
-  triggerOnEnter: true,
-  clearOnSend: true,
-  showLoading: true,
-  loadingText: "Thinking...",
-});
+Shows content only while loading:
 
-// Later: cleanup() to remove listeners
+```tsx
+<LLMLoading>
+  <p>Loading model...</p>
+</LLMLoading>
 ```
 
-### Capability Detection
+### `<LLMReady>`
 
-```typescript
-import { detectCapabilities, isWebGPUSupported } from "local-llm";
+Shows content only when ready:
 
-// Full capability check
-const caps = await detectCapabilities();
-console.log(caps.webgpu); // true/false
-console.log(caps.recommendedBackend); // 'webllm' | 'transformers'
-
-// Quick WebGPU check
-if (await isWebGPUSupported()) {
-  console.log("WebGPU available!");
-}
+```tsx
+<LLMReady fallback={<Loading />}>
+  <ChatInterface />
+</LLMReady>
 ```
 
-## Browser Support
+## Available Models
 
-| Browser      | WebGPU     | WASM Fallback |
-| ------------ | ---------- | ------------- |
-| Chrome 113+  | ✅         | ✅            |
-| Edge 113+    | ✅         | ✅            |
-| Safari 18+   | ✅         | ✅            |
-| Firefox 127+ | ⚠️ Nightly | ✅            |
+### Transformers.js Backend (ONNX)
 
-## Development
+| Alias                 | Model                  | Size   |
+| --------------------- | ---------------------- | ------ |
+| `qwen-2.5-0.5b`       | Qwen 2.5 0.5B Instruct | ~350MB |
+| `qwen-2.5-1.5b`       | Qwen 2.5 1.5B Instruct | ~900MB |
+| `qwen-2.5-coder-0.5b` | Qwen 2.5 Coder 0.5B    | ~350MB |
+| `smollm2-135m`        | SmolLM2 135M           | ~100MB |
+| `smollm2-360m`        | SmolLM2 360M           | ~250MB |
+| `tinyllama`           | TinyLlama 1.1B         | ~700MB |
+| `phi-3-mini`          | Phi-3 Mini 4K          | ~2.3GB |
 
-```bash
-# Install dependencies
-bun install
+### WebLLM Backend (WebGPU)
 
-# Run demo
-bun run demo
+| Alias           | Model         | Size   |
+| --------------- | ------------- | ------ |
+| `phi-3-mini`    | Phi-3 Mini 4K | ~2.3GB |
+| `llama-3.2-1b`  | Llama 3.2 1B  | ~1GB   |
+| `llama-3.2-3b`  | Llama 3.2 3B  | ~2GB   |
+| `gemma-2-2b`    | Gemma 2 2B    | ~1.5GB |
+| `qwen-2.5-0.5b` | Qwen 2.5 0.5B | ~350MB |
+| `qwen-2.5-1.5b` | Qwen 2.5 1.5B | ~900MB |
 
-# Build for distribution
-bun run build
+## Browser Requirements
 
-# Type check
-bun run typecheck
-```
+- **WebGPU** (Chrome 113+, Edge 113+) for best performance
+- Falls back to **WebAssembly** for older browsers
 
 ## License
 
-MIT
+MIT License
