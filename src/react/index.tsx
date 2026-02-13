@@ -831,7 +831,7 @@ function LLMReady({ children, fallback = null }: LLMReadyProps) {
 }
 
 // Import ready-made components
-import { Chat, type ChatProps } from './components';
+import { Chat, ChatApp, type ChatProps, type ChatAppProps } from './components';
 import { ChatInput, type ChatInputProps } from './chat-input';
 
 export {
@@ -850,9 +850,11 @@ export {
 
   // Ready-Made Components
   Chat,
+  ChatApp,
   ChatInput,
 
   // Component Types
   type ChatProps,
+  type ChatAppProps,
   type ChatInputProps,
 };

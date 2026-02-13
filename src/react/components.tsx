@@ -2,33 +2,36 @@
  * Chat — A complete, self-contained chat interface for @blank-utils/llm.
  * Drop inside <LLMProvider> and get a working chat UI in one line.
  *
- * Zero external dependencies. All styles embedded.
+ * Premium "Terminal Luxury" Aesthetic (Cherry Red Edition).
  *
  * @example
  * ```tsx
- * import { LLMProvider, Chat } from "@blank-utils/llm/react";
+ * import { LLMProvider, Chat, ChatApp } from "@blank-utils/llm/react";
  *
- * function App() {
- *   return (
- *     <LLMProvider model="qwen-2.5-0.5b">
- *       <Chat />
- *     </LLMProvider>
- *   );
- * }
+ * // Option A: Zero setup (includes provider + model switching)
+ * <ChatApp defaultModel="qwen-2.5-0.5b" />
+ *
+ * // Option B: Manual provider
+ * <LLMProvider model="qwen-2.5-0.5b">
+ *   <Chat />
+ * </LLMProvider>
  * ```
  */
 
 import * as React from 'react';
-import { useRef, useEffect, useState } from 'react';
-import { useLLM } from './index';
-import type { UseChatOptions } from './index';
-import { ChatInput, type ChatInputProps } from './chat-input';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { useLLM, type UseChatOptions, LLMProvider, type LLMProviderProps } from './index';
+import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-input';
+import { WEBLLM_MODELS, TRANSFORMERS_MODELS, type SupportedModel } from '../models';
+import type { ChatMessage } from '../types';
 
-// We need useChat but can't import from index without circular dep at runtime.
-// useChat is defined in the same module, so we import the hook creator directly.
-// Actually, since this file is imported BY index.tsx which then exports it,
-// and useChat is also in index.tsx, we can import from index.
-// The bundler handles this fine since it's all in the same compilation unit.
+// Streamdown imports (externalized in build)
+// @ts-ignore
+import { Streamdown } from 'streamdown';
+// @ts-ignore
+import { code } from '@streamdown/code';
+// @ts-ignore
+import { mermaid } from '@streamdown/mermaid';
 
 // ============================================================================
 // Types
@@ -37,46 +40,63 @@ import { ChatInput, type ChatInputProps } from './chat-input';
 export interface ChatProps {
   /** System prompt for the conversation */
   systemPrompt?: string;
-
   /** Placeholder text for the input */
   placeholder?: string;
-
   /** Theme */
   theme?: 'dark' | 'light';
-
   /** Additional className for the outermost container */
   className?: string;
-
   /** Maximum height of the chat container. Default: '600px' */
   maxHeight?: string;
-
   /** Options passed to useChat internally */
   chatOptions?: Omit<UseChatOptions, 'systemPrompt'>;
-
   /** Custom actions rendered in the input toolbar */
   inputActions?: React.ReactNode;
-
   /** Called when a message is sent */
   onSend?: (message: string) => void;
-
   /** Called when a response is received */
   onResponse?: (response: string) => void;
-
   /** Called on error */
   onError?: (error: Error) => void;
-
   /** Whether to show the model info header. Default: true */
   showHeader?: boolean;
-
   /** Whether to show loading progress. Default: true */
   showProgress?: boolean;
-
   /** Custom welcome message when chat is empty */
   welcomeMessage?: string;
+  /** Called when the user selects a new model in the dropdown */
+  onModelChange?: (modelId: string) => void;
+}
+
+export interface ChatAppProps extends ChatProps {
+  /** Default model ID to start with */
+  defaultModel?: SupportedModel;
+  /** Default backend to use */
+  defaultBackend?: 'webllm' | 'transformers' | 'auto';
+  /** Auto-load model on mount. Default: true */
+  autoLoad?: boolean;
 }
 
 // ============================================================================
-// Inline SVG Icons
+// Internal Types & Utils
+// ============================================================================
+
+interface ChatMessageInternal {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  images?: ImageAttachment[];
+}
+
+const DEFAULT_SYSTEM_PROMPT = `You are a helpful AI assistant.
+- You can use full Markdown (bold, italic, headers, lists).
+- You can use Code Blocks with language syntax highlighting.
+- You can use Mermaid diagrams (\`\`\`mermaid ... \`\`\`).
+- You can use LaTeX math ($$ ... $$).`;
+
+const ALL_MODELS = { ...WEBLLM_MODELS, ...TRANSFORMERS_MODELS };
+
+// ============================================================================
+// Icons
 // ============================================================================
 
 function RetryIcon() {
@@ -84,6 +104,14 @@ function RetryIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="23 4 23 10 17 10" />
       <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }
@@ -106,11 +134,12 @@ function injectChatStyles(theme: 'dark' | 'light') {
       display: flex;
       flex-direction: column;
       border-radius: 16px;
-      border: 1px solid ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'};
-      background: ${d ? '#0a0a0a' : '#fafafa'};
+      border: 1px solid ${d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
+      background: ${d ? '#09090b' : '#ffffff'};
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: ${d ? '#fafafa' : '#09090b'};
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     /* Header */
@@ -120,30 +149,100 @@ function injectChatStyles(theme: 'dark' | 'light') {
       justify-content: space-between;
       padding: 12px 16px;
       border-bottom: 1px solid ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-      font-size: 12px;
-      color: ${d ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'};
+      font-size: 13px;
+      background: ${d ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
     }
-    .llm-chat-header-model {
-      font-weight: 600;
-      color: ${d ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+    
+    /* Model Selector */
+    .llm-chat-model-select {
+      position: relative;
     }
-    .llm-chat-header-status {
+    .llm-chat-model-btn {
       display: flex;
       align-items: center;
       gap: 6px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      font-weight: 500;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .llm-chat-model-btn:hover {
+      background: ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'};
+    }
+    .llm-chat-model-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      width: 280px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: ${d ? '#18181b' : '#ffffff'};
+      border: 1px solid ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      z-index: 50;
+      padding: 4px;
+      animation: llm-fadein 0.1s ease-out;
+    }
+    .llm-chat-model-group {
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: ${d ? '#a1a1aa' : '#71717a'};
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+    .llm-chat-model-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 6px 8px;
+      font-size: 13px;
+      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .llm-chat-model-item:hover {
+      background: ${d ? '#27272a' : '#f4f4f5'};
+      color: ${d ? '#fb7185' : '#e11d48'};
+    }
+    .llm-chat-model-item--active {
+      color: ${d ? '#fb7185' : '#e11d48'};
+      background: ${d ? 'rgba(251,113,133,0.1)' : 'rgba(225,29,72,0.05)'};
+    }
+
+    /* Status */
+    .llm-chat-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: ${d ? '#a1a1aa' : '#71717a'};
     }
     .llm-chat-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      flex-shrink: 0;
     }
     .llm-chat-dot--loading {
       background: #f59e0b;
-      animation: llm-pulse 1.5s ease-in-out infinite;
+      animation: llm-pulse 1.5s infinite;
     }
     .llm-chat-dot--ready {
-      background: #22c55e;
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16,185,129,0.3);
     }
     .llm-chat-dot--error {
       background: #ef4444;
@@ -154,118 +253,137 @@ function injectChatStyles(theme: 'dark' | 'light') {
       padding: 0 16px 8px;
     }
     .llm-chat-progress-bar {
-      height: 3px;
-      border-radius: 2px;
+      height: 2px;
       background: ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
       overflow: hidden;
     }
     .llm-chat-progress-fill {
       height: 100%;
-      border-radius: 2px;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      background: ${d ? '#fb7185' : '#e11d48'};
       transition: width 0.3s ease;
     }
     .llm-chat-progress-text {
       font-size: 11px;
-      color: ${d ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'};
+      color: ${d ? '#71717a' : '#a1a1aa'};
       margin-top: 4px;
+      text-align: right;
     }
 
     /* Messages */
     .llm-chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 24px;
       scrollbar-width: thin;
-      scrollbar-color: ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} transparent;
     }
-
+    
     /* Welcome */
     .llm-chat-welcome {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       flex: 1;
       text-align: center;
-      color: ${d ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'};
+      color: ${d ? '#52525b' : '#a1a1aa'};
+      padding: 40px;
+    }
+    .llm-chat-welcome h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      margin: 0 0 8px;
+    }
+    .llm-chat-welcome p {
       font-size: 14px;
-      padding: 40px 20px;
-      line-height: 1.5;
+      margin: 0;
+      max-width: 300px;
     }
 
     /* Bubble */
     .llm-chat-bubble {
       display: flex;
-      max-width: 80%;
+      flex-direction: column;
+      max-width: 100%;
       animation: llm-fadein 0.2s ease;
     }
     .llm-chat-bubble--user {
       align-self: flex-end;
+      max-width: 85%;
     }
     .llm-chat-bubble--assistant {
       align-self: flex-start;
+      width: 100%;
     }
-    .llm-chat-bubble-content {
-      padding: 10px 14px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .llm-chat-bubble--user .llm-chat-bubble-content {
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .llm-chat-bubble--assistant .llm-chat-bubble-content {
-      background: ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'};
-      color: ${d ? '#d4d4d4' : '#333'};
-      border-bottom-left-radius: 4px;
-    }
-
-    /* Streaming */
-    .llm-chat-streaming .llm-chat-bubble-content {
-      border: 1px solid ${d ? 'rgba(56,189,248,0.2)' : 'rgba(59,130,246,0.2)'};
-    }
-    .llm-chat-cursor {
-      display: inline-block;
-      width: 2px;
-      height: 14px;
-      background: ${d ? '#38bdf8' : '#3b82f6'};
-      margin-left: 2px;
-      vertical-align: text-bottom;
-      animation: llm-blink 0.8s step-end infinite;
-    }
-
-    /* Pending */
-    .llm-chat-pending {
-      display: flex;
-      justify-content: center;
-      animation: llm-fadein 0.3s ease;
-    }
-    .llm-chat-pending-badge {
-      font-size: 12px;
-      color: #f59e0b;
-      background: rgba(245,158,11,0.1);
-      padding: 4px 12px;
+    
+    /* User Message Style */
+    .llm-chat-user-content {
+      padding: 10px 16px;
       border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      background: ${d ? '#fb7185' : '#e11d48'}; /* Cherry Red */
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Assistant Message Style (Streamdown wrapper) */
+    .llm-chat-assistant-content {
+      font-size: 14px;
+      line-height: 1.7;
+      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+    }
+    
+    /* Streamdown Overrides */
+    .llm-chat-assistant-content pre {
+      background: ${d ? '#18181b' : '#f4f4f5'} !important;
+      border: 1px solid ${d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} !important;
+      border-radius: 8px !important;
+      padding: 12px !important;
+      margin: 12px 0 !important;
+    }
+    .llm-chat-assistant-content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+      font-size: 13px !important;
+    }
+    .llm-chat-assistant-content :not(pre) > code {
+      background: ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
+      padding: 2px 4px;
+      border-radius: 4px;
+      color: ${d ? '#fb7185' : '#e11d48'};
+    }
+    
+    /* Attachments in message */
+    .llm-chat-msg-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      justify-content: flex-end;
+    }
+    .llm-chat-msg-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
     }
 
     /* Error */
     .llm-chat-error {
       margin: 0 16px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: ${d ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.05)'};
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: ${d ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.05)'};
       border: 1px solid ${d ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'};
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 12px;
     }
     .llm-chat-error-text {
       font-size: 13px;
@@ -277,49 +395,22 @@ function injectChatStyles(theme: 'dark' | 'light') {
       align-items: center;
       gap: 4px;
       padding: 4px 10px;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid ${d ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.2)'};
       background: transparent;
       color: ${d ? '#f87171' : '#dc2626'};
       font-size: 12px;
       cursor: pointer;
-      transition: background 0.15s;
-      flex-shrink: 0;
-    }
-    .llm-chat-error-retry:hover {
-      background: ${d ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)'};
+      font-weight: 500;
     }
 
-    /* Loading overlay */
-    .llm-chat-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex: 1;
-      padding: 40px 20px;
-    }
-    .llm-chat-spinner {
-      width: 28px;
-      height: 28px;
-      border: 2.5px solid ${d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-      border-top-color: #38bdf8;
-      border-radius: 50%;
-      animation: llm-spin 0.7s linear infinite;
-    }
-    .llm-chat-loading-text {
-      font-size: 13px;
-      color: ${d ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
-    }
-
-    /* Input area */
+    /* Input Area */
     .llm-chat-input-area {
-      padding: 8px 12px 12px;
+      padding: 12px 16px 16px;
       border-top: 1px solid ${d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+      background: ${d ? '#09090b' : '#ffffff'};
     }
 
-    /* Animations */
     @keyframes llm-fadein {
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
@@ -327,13 +418,6 @@ function injectChatStyles(theme: 'dark' | 'light') {
     @keyframes llm-pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
-    }
-    @keyframes llm-blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-    @keyframes llm-spin {
-      to { transform: rotate(360deg); }
     }
   `;
 
@@ -344,26 +428,83 @@ function injectChatStyles(theme: 'dark' | 'light') {
 }
 
 // ============================================================================
-// Chat Component
+// Internal Components
 // ============================================================================
 
-/**
- * We need access to useChat, but it's defined in the same module (index.tsx).
- * To avoid circular imports at the module level, we dynamically grab it
- * from the context at runtime. The Chat component must be used inside
- * an <LLMProvider>, which provides everything via useLLM().
- *
- * Instead, we re-implement a lightweight version that calls useLLM() directly
- * and manages chat state internally. This avoids any circular dependency.
- */
+function ModelSelector({ 
+  currentModel, 
+  onSelect,
+  theme
+}: { 
+  currentModel: string | null, 
+  onSelect: (id: string) => void,
+  theme: 'dark' | 'light'
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-interface ChatMessageInternal {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const displayModel = useMemo(() => {
+    if (!currentModel) return 'Select Model';
+    // Find friendly name or format ID
+    const id = currentModel.split('/').pop() || currentModel;
+    return id.length > 25 ? id.substring(0, 25) + '...' : id;
+  }, [currentModel]);
+
+  return (
+    <div className="llm-chat-model-select" ref={ref}>
+      <button 
+        type="button" 
+        className="llm-chat-model-btn"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {displayModel} <ChevronDownIcon />
+      </button>
+
+      {isOpen && (
+        <div className="llm-chat-model-menu">
+          <div className="llm-chat-model-group">WebLLM Models (Standard)</div>
+          {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
+            <button
+              key={key}
+              className={`llm-chat-model-item ${currentModel === value ? 'llm-chat-model-item--active' : ''}`}
+              onClick={() => { onSelect(value); setIsOpen(false); }}
+            >
+              {key}
+            </button>
+          ))}
+          
+          <div className="llm-chat-model-group">Transformers.js Models</div>
+          {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
+            <button
+              key={key}
+              className={`llm-chat-model-item ${currentModel === value ? 'llm-chat-model-item--active' : ''}`}
+              onClick={() => { onSelect(value); setIsOpen(false); }}
+            >
+              {key}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
+// ============================================================================
+// Main Components
+// ============================================================================
+
 function Chat({
-  systemPrompt = 'You are a helpful assistant. Keep responses concise and clear.',
+  systemPrompt = DEFAULT_SYSTEM_PROMPT,
   placeholder = 'Type a message...',
   theme = 'dark',
   className,
@@ -374,15 +515,17 @@ function Chat({
   onError: onErrorProp,
   showHeader = true,
   showProgress = true,
-  welcomeMessage = 'Send a message to start chatting',
+  welcomeMessage = 'Ready to assist. Type below to start.',
+  onModelChange,
 }: ChatProps) {
-  const { llm, isLoading, isReady, loadProgress, error, modelId, backend, reload } = useLLM();
+  const { llm, isLoading, isReady, loadProgress, error, modelId, reload } = useLLM();
 
   const [messages, setMessages] = useState<ChatMessageInternal[]>([]);
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null); // queue for when loading
+  const [images, setImages] = useState<ImageAttachment[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef(false);
@@ -396,25 +539,43 @@ function Chat({
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingText]);
+  }, [messages, streamingText, isGenerating]);
 
   // Generate response
-  const generate = async (userContent: string, currentMessages: ChatMessageInternal[]) => {
+  const generate = async (userContent: string, currentMessages: ChatMessageInternal[], attachedImages: ImageAttachment[] = []) => {
     if (!llm || !isReady || isProcessingRef.current) return;
     isProcessingRef.current = true;
 
-    const userMsg: ChatMessageInternal = { role: 'user', content: userContent };
+    // Create user message
+    const userMsg: ChatMessageInternal = { 
+      role: 'user', 
+      content: userContent,
+      images: attachedImages 
+    };
+    
+    // Add to UI immediately
     setMessages(prev => [...prev, userMsg]);
-
-    const apiMessages: ChatMessageInternal[] = [];
-    if (systemPrompt) {
-      apiMessages.push({ role: 'system', content: systemPrompt });
-    }
-    apiMessages.push(...currentMessages, userMsg);
-
     setIsGenerating(true);
     setStreamingText('');
     abortRef.current = false;
+
+    // Build API messages
+    const apiMessages: ChatMessage[] = [];
+    
+    if (systemPrompt) {
+      apiMessages.push({ role: 'system', content: systemPrompt });
+    }
+
+    // Add previous history
+    currentMessages.forEach(m => {
+      // Simplification: Not sending images to LLM yet (requires vision-specific handling)
+      // Just sending text content for history context
+      apiMessages.push({ role: m.role as ChatMessage['role'], content: m.content });
+    });
+
+    // Add current message
+    // TODO: Vision support - construct content array if images present
+    apiMessages.push({ role: 'user', content: userContent });
 
     try {
       const response = await llm.stream(
@@ -434,35 +595,33 @@ function Chat({
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       onErrorProp?.(error);
+      
+      // Add error message to chat
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: `Error: ${error.message}` 
+      }]);
     } finally {
       setIsGenerating(false);
       isProcessingRef.current = false;
     }
   };
 
-  // Process pending message when model becomes ready
-  useEffect(() => {
-    if (isReady && pendingMessage && !isProcessingRef.current) {
-      const msg = pendingMessage;
-      setPendingMessage(null);
-      generate(msg, messages);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReady, pendingMessage]);
-
   const handleSend = () => {
     const text = input.trim();
-    if (!text) return;
+    if (!text && images.length === 0) return;
 
+    const currentImages = [...images];
+    
     setInput('');
+    setImages([]);
     onSendProp?.(text);
 
     if (llm && isReady) {
-      generate(text, messages);
+      generate(text, messages, currentImages);
     } else if (isLoading) {
-      // Queue the message
-      const userMsg: ChatMessageInternal = { role: 'user', content: text };
-      setMessages(prev => [...prev, userMsg]);
+      // Queue logic... simplified for now (only text queue)
+      // Ideally we'd queue images too but that's complex
       setPendingMessage(text);
     }
   };
@@ -492,25 +651,30 @@ function Chat({
         : 'Idle';
 
   return (
-    <div
-      className={`llm-chat${className ? ` ${className}` : ''}`}
-      style={{ maxHeight, height: '100%' }}
-    >
+    <div className={`llm-chat${className ? ` ${className}` : ''}`} style={{ maxHeight, height: '100%' }}>
       {/* Header */}
       {showHeader && (
         <div className="llm-chat-header">
-          <span className="llm-chat-header-model">
-            {modelId ? modelId.split('/').pop()?.substring(0, 30) : 'No model'}
-            {backend && <span style={{ fontWeight: 400, marginLeft: 6, opacity: 0.6 }}>({backend})</span>}
-          </span>
-          <div className="llm-chat-header-status">
-            <span className={statusDotClass} />
+          {onModelChange ? (
+            <ModelSelector 
+              currentModel={modelId} 
+              onSelect={onModelChange}
+              theme={theme}
+            />
+          ) : (
+             <div className="llm-chat-model-select">
+               <span style={{fontWeight: 600}}>{modelId?.split('/').pop()}</span>
+             </div>
+          )}
+          
+          <div className="llm-chat-status">
             <span>{statusText}</span>
+            <div className={statusDotClass} />
           </div>
         </div>
       )}
 
-      {/* Progress bar */}
+      {/* Progress Bar */}
       {showProgress && isLoading && loadProgress && (
         <div className="llm-chat-progress">
           <div className="llm-chat-progress-bar">
@@ -523,7 +687,7 @@ function Chat({
         </div>
       )}
 
-      {/* Error */}
+      {/* Error Banner */}
       {error && (
         <div className="llm-chat-error">
           <span className="llm-chat-error-text">{error.message}</span>
@@ -533,51 +697,57 @@ function Chat({
         </div>
       )}
 
-      {/* Messages */}
+      {/* Messages Area */}
       <div className="llm-chat-messages">
-        {isLoading && messages.length === 0 && !error && (
-          <div className="llm-chat-loading">
-            <div className="llm-chat-spinner" />
-            <div className="llm-chat-loading-text">
-              {loadProgress?.status || 'Initializing model...'}
-            </div>
-          </div>
-        )}
-
         {!isLoading && messages.length === 0 && !error && (
-          <div className="llm-chat-welcome">{welcomeMessage}</div>
+          <div className="llm-chat-welcome">
+            <h3>{welcomeMessage}</h3>
+            <p>I can help with coding, analysis, and writing. I support Markdown, Mermaid diagrams, and more.</p>
+          </div>
         )}
 
-        {messages.map((msg, i) => {
-          if (msg.role === 'system') return null;
-          return (
-            <div key={i} className={`llm-chat-bubble llm-chat-bubble--${msg.role}`}>
-              <div className="llm-chat-bubble-content">{msg.content}</div>
-            </div>
-          );
-        })}
+        {messages.map((msg, i) => (
+          <div key={i} className={`llm-chat-bubble llm-chat-bubble--${msg.role}`}>
+            {msg.role === 'user' ? (
+              <>
+                {msg.images && msg.images.length > 0 && (
+                  <div className="llm-chat-msg-images">
+                    {msg.images.map(img => (
+                      <img key={img.id} src={img.dataUrl} className="llm-chat-msg-img" alt="attachment" />
+                    ))}
+                  </div>
+                )}
+                <div className="llm-chat-user-content">{msg.content}</div>
+              </>
+            ) : (
+              <div className="llm-chat-assistant-content">
+                <Streamdown 
+                  plugins={{ code, mermaid }}
+                >
+                  {msg.content}
+                </Streamdown>
+              </div>
+            )}
+            
+          </div>
+        ))}
 
-        {/* Streaming */}
         {streamingText && (
-          <div className="llm-chat-bubble llm-chat-bubble--assistant llm-chat-streaming">
-            <div className="llm-chat-bubble-content">
-              {streamingText}
-              <span className="llm-chat-cursor" />
+          <div className="llm-chat-bubble llm-chat-bubble--assistant">
+            <div className="llm-chat-assistant-content">
+                <Streamdown 
+                  plugins={{ code, mermaid }}
+                >
+                  {streamingText}
+                </Streamdown>
             </div>
           </div>
         )}
-
-        {/* Pending */}
-        {pendingMessage !== null && (
-          <div className="llm-chat-pending">
-            <span className="llm-chat-pending-badge">⏳ Waiting for model to load...</span>
-          </div>
-        )}
-
+        
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input Area */}
       <div className="llm-chat-input-area">
         <ChatInput
           value={input}
@@ -586,13 +756,50 @@ function Chat({
           onStop={handleStop}
           disabled={!isReady && !isLoading}
           isGenerating={isGenerating}
-          placeholder={isLoading ? 'Type now, send when ready...' : placeholder}
+          placeholder={isLoading ? 'Model is loading...' : placeholder}
           theme={theme}
           actions={inputActions}
+          images={images}
+          onImageAdd={img => setImages(prev => [...prev, img])}
+          onImageRemove={id => setImages(prev => prev.filter(img => img.id !== id))}
         />
       </div>
     </div>
   );
 }
 
-export { Chat };
+// ============================================================================
+// ChatApp Component
+// ============================================================================
+
+function ChatApp({
+  defaultModel = 'qwen-2.5-0.5b',
+  defaultBackend = 'auto',
+  autoLoad = true,
+  onModelChange,
+  ...chatProps
+}: ChatAppProps) {
+  const [model, setModel] = useState(defaultModel);
+
+  const handleModelChange = (newModel: string) => {
+    setModel(newModel);
+    onModelChange?.(newModel);
+  };
+
+  return (
+    <LLMProvider 
+      // Force remount when model changes to ensure clean state
+      key={model} 
+      model={model as SupportedModel} 
+      backend={defaultBackend}
+      autoLoad={autoLoad}
+    >
+      <Chat 
+        {...chatProps}
+        onModelChange={handleModelChange}
+      />
+    </LLMProvider>
+  );
+}
+
+export { Chat, ChatApp };

@@ -1,6 +1,6 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
   "type": "module",
   "main": "./dist/index.js",
@@ -34,7 +34,7 @@
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
     "clean": "rm -rf dist",
-    "build:js": "bun build ./src/index.ts --outfile ./dist/index.js --format esm --external react --external react-dom && bun build ./src/react/index.tsx --outfile ./dist/react/index.js --format esm --external react --external react-dom",
+    "build:js": "bun build ./src/index.ts --outfile ./dist/index.js --format esm --external react --external react-dom --external streamdown --external @streamdown/code --external @streamdown/mermaid && bun build ./src/react/index.tsx --outfile ./dist/react/index.js --format esm --external react --external react-dom --external streamdown --external @streamdown/code --external @streamdown/mermaid",
     "postbuild": "mkdir -p dist/react && cp node_modules/@huggingface/transformers/dist/*.wasm dist/ && cp node_modules/onnxruntime-web/dist/*.mjs dist/ && cp node_modules/onnxruntime-web/dist/*.wasm dist/ && cp dist/*.wasm dist/react/ 2>/dev/null || true && cp dist/*.mjs dist/react/ 2>/dev/null || true",
     "build:types": "tsc -p tsconfig.build.json",
     "build": "bun run clean && bun run build:js && bun run postbuild && bun run build:types",
@@ -91,6 +91,9 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
-    "@mlc-ai/web-llm": "^0.2.80"
+    "@mlc-ai/web-llm": "^0.2.80",
+    "@streamdown/code": "^1.0.2",
+    "@streamdown/mermaid": "^1.0.2",
+    "streamdown": "^2.2.0"
   }
 }
