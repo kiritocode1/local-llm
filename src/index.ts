@@ -86,9 +86,13 @@ export {
   useStream,
   useCompletion,
 
-  // Components
+  // Conditional Components
   LLMLoading,
   LLMReady,
+
+  // Ready-Made Components
+  Chat,
+  ChatInput,
 
   // Types
   type LLMContextValue,
@@ -101,4 +105,6 @@ export {
   type UseCompletionReturn,
   type LLMLoadingProps,
   type LLMReadyProps,
+  type ChatProps,
+  type ChatInputProps,
 } from './react';

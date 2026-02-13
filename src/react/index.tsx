@@ -27,7 +27,6 @@
  * }
  * ```
  */
-
 import * as React from 'react';
 import {
   createContext,
@@ -831,12 +830,29 @@ function LLMReady({ children, fallback = null }: LLMReadyProps) {
   return <>{children}</>;
 }
 
+// Import ready-made components
+import { Chat, type ChatProps } from './components';
+import { ChatInput, type ChatInputProps } from './chat-input';
+
 export {
+  // Provider & Context
   LLMProvider,
   useLLM,
+
+  // Hooks
   useChat,
   useStream,
   useCompletion,
+
+  // Conditional Components
   LLMLoading,
   LLMReady,
+
+  // Ready-Made Components
+  Chat,
+  ChatInput,
+
+  // Component Types
+  type ChatProps,
+  type ChatInputProps,
 };
