@@ -39,7 +39,29 @@ bun add @blank-utils/llm
 
 ## Quick Start
 
-### React (Recommended)
+### Quick Chat (Zero Setup)
+
+Drop in a complete chat interface with one component — no custom UI code needed:
+
+```tsx
+import { LLMProvider, Chat } from "@blank-utils/llm/react";
+
+export default function App() {
+  return (
+    <LLMProvider model="qwen-2.5-0.5b">
+      <Chat
+        theme="dark"
+        systemPrompt="You are a helpful assistant."
+        placeholder="Ask me anything..."
+      />
+    </LLMProvider>
+  );
+}
+```
+
+### React with Hooks (Custom UI)
+
+Build your own chat interface using the hooks directly:
 
 ```tsx
 import { LLMProvider, useChat, useLLM } from "@blank-utils/llm/react";
@@ -47,12 +69,12 @@ import { LLMProvider, useChat, useLLM } from "@blank-utils/llm/react";
 function App() {
   return (
     <LLMProvider model="qwen-2.5-0.5b">
-      <Chat />
+      <ChatUI />
     </LLMProvider>
   );
 }
 
-function Chat() {
+function ChatUI() {
   const { isLoading, loadProgress } = useLLM();
   const {
     messages,
@@ -143,7 +165,9 @@ const cleanup = llm.attachToInput("#prompt-input", "#response-output", {
 │   │   ├── webllm.ts     # WebLLM backend (WebGPU)
 │   │   └── transformers.ts # Transformers.js backend (WASM / WebGPU)
 │   └── react/
-│       └── index.tsx     # React context, provider, hooks, components
+│       ├── index.tsx     # React context, provider, hooks
+│       ├── components.tsx # <Chat> — ready-made chat interface
+│       └── chat-input.tsx # <ChatInput> — auto-resizing input widget
 └── dist/                 # Built output (ESM)
 ```
 
@@ -278,6 +302,63 @@ Conditional rendering components:
   <ChatInterface />
 </LLMReady>
 ```
+
+### `<Chat>`
+
+A complete, self-contained chat interface. Zero external dependencies — all styling is embedded via CSS-in-JS. Just drop it inside `<LLMProvider>`:
+
+```tsx
+<Chat
+  theme="dark" // 'dark' | 'light'
+  systemPrompt="You are helpful." // System prompt
+  placeholder="Ask me anything..." // Input placeholder
+  maxHeight="600px" // Container max height
+  showHeader={true} // Model info header
+  showProgress={true} // Loading progress bar
+  welcomeMessage="Start chatting" // Empty state message
+  onSend={(msg) => {}} // Called when user sends
+  onResponse={(res) => {}} // Called when AI responds
+  onError={(err) => {}} // Error handler
+  inputActions={<MyCustomButtons />} // Extra buttons in toolbar
+/>
+```
+
+**Features out of the box:**
+
+- 💬 Message bubbles with user/assistant styling
+- ⚡ Streaming with typing cursor animation
+- 📊 Model loading progress bar
+- ⏳ Message queueing while model downloads
+- 🔄 Error display with retry button
+- 🌙 Dark and light themes
+
+### `<ChatInput>`
+
+Standalone auto-resizing input component. Use it to build custom chat layouts:
+
+```tsx
+import { ChatInput } from "@blank-utils/llm/react";
+
+<ChatInput
+  value={input} // Controlled value
+  onChange={setInput} // Value change handler
+  onSend={handleSend} // Submit handler (Enter or button)
+  onStop={handleStop} // Stop generation
+  disabled={false} // Disable input
+  isGenerating={false} // Show stop button instead of send
+  placeholder="Type..." // Placeholder text
+  maxRows={5} // Max rows before scroll
+  theme="dark" // 'dark' | 'light'
+  actions={<MyButtons />} // Custom toolbar actions
+/>;
+```
+
+**Features:**
+
+- 📝 Auto-resizes up to `maxRows` then scrolls
+- ⌨️ Enter to send, Shift+Enter for newline
+- ⏹️ Stop button while generating
+- 🎨 Dark/light theme support
 
 ---
 
