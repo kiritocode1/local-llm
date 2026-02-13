@@ -20,6 +20,7 @@ export type {
   LLMProvider as LLMProviderInterface,
   AttachOptions,
   BrowserCapabilities,
+  SupportedModel,
 } from './types';
 
 // Re-export detection utilities

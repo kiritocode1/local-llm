@@ -22,6 +22,9 @@ export type Device = 'webgpu' | 'wasm' | 'auto';
  */
 export type Quantization = 'q4' | 'q8' | 'fp16' | 'fp32';
 
+import type { SupportedModel } from './models';
+export type { SupportedModel };
+
 /**
  * Configuration for creating an LLM instance
  */
@@ -31,7 +34,7 @@ export interface LLMConfig {
    * For Transformers.js, use HuggingFace model IDs.
    * @default 'Phi-3-mini-4k-instruct-q4f16_1-MLC' for WebLLM
    */
-  model?: string;
+  model?: SupportedModel;
 
   /**
    * Which backend to use

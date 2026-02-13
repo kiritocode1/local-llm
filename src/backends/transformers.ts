@@ -22,37 +22,10 @@ import type { TextGenerationPipeline } from '@huggingface/transformers';
  * Default model for Transformers.js backend
  * Using Qwen2.5 0.5B as it's well-tested with ONNX
  */
-export const DEFAULT_TRANSFORMERS_MODEL = 'onnx-community/Qwen2.5-0.5B-Instruct';
+import { DEFAULT_TRANSFORMERS_MODEL, TRANSFORMERS_MODELS, type TransformersModelID } from '../models';
+export { DEFAULT_TRANSFORMERS_MODEL, TRANSFORMERS_MODELS };
 
-/**
- * Transformers.js compatible models (must have ONNX weights)
- * These are specifically converted for browser use via transformers.js
- * 
- * @see https://huggingface.co/onnx-community for more models
- */
-export const TRANSFORMERS_MODELS = {
-  // === Qwen 2.5 Models (Alibaba) - Excellent quality ===
-  'qwen-2.5-0.5b': 'onnx-community/Qwen2.5-0.5B-Instruct',
-  'qwen-2.5-1.5b': 'onnx-community/Qwen2.5-1.5B-Instruct',
-  'qwen-2.5-coder-0.5b': 'onnx-community/Qwen2.5-Coder-0.5B-Instruct',
-  'qwen-2.5-coder-1.5b': 'onnx-community/Qwen2.5-Coder-1.5B-Instruct',
-
-  // === Qwen 3 Models (Alibaba) - Latest generation ===
-  'qwen-3-0.6b': 'onnx-community/Qwen3-0.6B-ONNX',
-
-  // === SmolLM2 Models (HuggingFace) - Ultra lightweight ===
-  'smollm2-135m': 'HuggingFaceTB/SmolLM2-135M-Instruct',
-  'smollm2-360m': 'HuggingFaceTB/SmolLM2-360M-Instruct',
-  'smollm2-1.7b': 'HuggingFaceTB/SmolLM2-1.7B-Instruct',
-
-  // === Phi Models (Microsoft) ===
-  'phi-3-mini': 'Xenova/Phi-3-mini-4k-instruct',
-
-  // === TinyLlama - Very fast and light ===
-  'tinyllama': 'Xenova/TinyLlama-1.1B-Chat-v1.0',
-} as const;
-
-export type TransformersModelAlias = keyof typeof TRANSFORMERS_MODELS;
+export type TransformersModelAlias = TransformersModelID;
 
 /**
  * Model size estimates for UI display
