@@ -39,9 +39,27 @@ bun add @blank-utils/llm
 
 ## Quick Start
 
-### Quick Chat (Zero Setup)
+### Quick Chat (Fully Featured App)
 
-Drop in a complete chat interface with one component — no custom UI code needed:
+The fastest way to get started. `<ChatApp>` includes the provider, model management, and UI in a single component:
+
+```tsx
+import { ChatApp } from "@blank-utils/llm/react";
+
+export default function App() {
+  return (
+    <ChatApp
+      defaultModel="qwen-2.5-0.5b"
+      theme="dark" // 'dark' | 'light'
+      systemPrompt="You are a helpful assistant."
+    />
+  );
+}
+```
+
+### Components (Custom Setup)
+
+If you already have a provider or want more control, use the `<Chat>` component:
 
 ```tsx
 import { LLMProvider, Chat } from "@blank-utils/llm/react";
@@ -59,12 +77,13 @@ export default function App() {
 }
 ```
 
-### React with Hooks (Custom UI)
+### Custom UI with Hooks
 
-Build your own chat interface using the hooks directly:
+Build your own interface from scratch using our hooks:
 
 ```tsx
 import { LLMProvider, useChat, useLLM } from "@blank-utils/llm/react";
+// ... (rest of the hooks example)
 
 function App() {
   return (
@@ -303,34 +322,64 @@ Conditional rendering components:
 </LLMReady>
 ```
 
-### `<Chat>`
+### Default Chat Interface explained
 
-A complete, self-contained chat interface. Zero external dependencies — all styling is embedded via CSS-in-JS. Just drop it inside `<LLMProvider>`:
+The `<Chat>` and `<ChatApp>` components provide a production-ready interface with "Terminal Luxury" aesthetics.
+
+**Key Features & Usage Points:**
+
+- **✨ Zero Config**: Just drop it in. No CSS files to import, no state to manage.
+- **🎨 Rich Text Rendering**:
+  - **Global Markdown**: Bold, cursives, lists, tables.
+  - **Code Blocks**: Syntax highlighting for 20+ languages.
+  - **Diagrams**: Renders `mermaid` diagrams automatically.
+  - **Math**: Supports LateX expressions.
+- **⚡ Eager Interaction**: Users can type and send messages _while_ the model is still initializing. The chat controls the queue.
+- **🌗 Theming**: Built-in 'dark' (cherry red accents) and 'light' modes.
+- **🔄 Model Switching**:
+  - If using `<ChatApp />`, a model selector dropdown is included automatically.
+  - If using `<Chat />`, pass `onModelChange` to enable the dropdown.
+- **🛠️ Extensible Toolbar**: Use the `inputActions` prop to add your own buttons (e.g., upload, clear) to the input area.
+
+### `<Chat>` Component API
 
 ```tsx
 <Chat
+  // Appearance
   theme="dark" // 'dark' | 'light'
-  systemPrompt="You are helpful." // System prompt
-  placeholder="Ask me anything..." // Input placeholder
-  maxHeight="600px" // Container max height
-  showHeader={true} // Model info header
-  showProgress={true} // Loading progress bar
-  welcomeMessage="Start chatting" // Empty state message
-  onSend={(msg) => {}} // Called when user sends
-  onResponse={(res) => {}} // Called when AI responds
-  onError={(err) => {}} // Error handler
-  inputActions={<MyCustomButtons />} // Extra buttons in toolbar
+  maxHeight="600px" // CSS max-height
+  className="my-chat" // Extra classes
+  // Content
+  systemPrompt="..." // Default: "You are a helpful AI assistant..."
+  welcomeMessage="..." // Text shown when chat is empty
+  placeholder="..." // Input placeholder
+  // Features
+  showHeader={true} // Toggle header/model info
+  showProgress={true} // Toggle loading progress bar
+  // Callbacks
+  onSend={(msg) => {}} // Listen to user messages
+  onResponse={(res) => {}} // Listen to AI responses
+  onModelChange={(id) => {}} // Enable model switching dropdown
+  inputActions={
+    <>
+      <button>Clear</button>
+    </>
+  } // Add custom buttons
 />
 ```
 
-**Features out of the box:**
+### `<ChatApp>` Component API
 
-- 💬 Message bubbles with user/assistant styling
-- ⚡ Streaming with typing cursor animation
-- 📊 Model loading progress bar
-- ⏳ Message queueing while model downloads
-- 🔄 Error display with retry button
-- 🌙 Dark and light themes
+Wrapper that combines `LLMProvider` and `Chat`.
+
+```tsx
+<ChatApp
+  defaultModel="qwen-2.5-0.5b"
+  defaultBackend="auto" // 'webllm' | 'transformers'
+  autoLoad={true} // Start downloading immediately
+  {...chatProps} // All <Chat> props are supported
+/>
+```
 
 ### `<ChatInput>`
 
