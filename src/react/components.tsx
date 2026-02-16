@@ -2,7 +2,7 @@
  * Chat — A complete, self-contained chat interface for @blank-utils/llm.
  * Drop inside <LLMProvider> and get a working chat UI in one line.
  *
- * Premium "Terminal Luxury" Aesthetic (Cherry Red Edition).
+ * Brutalist minimal aesthetic — flat black, high contrast, no decoration.
  *
  * @example
  * ```tsx
@@ -110,14 +110,15 @@ function RetryIcon() {
 
 function ChevronDownIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }
 
 // ============================================================================
-// Styles
+// Styles — Brutalist, flat, high-contrast. No shadows. No gradients.
+//           No border-radius. Pure black. Monospace labels.
 // ============================================================================
 
 const STYLE_ID = '__llm-chat-styles';
@@ -129,17 +130,25 @@ function injectChatStyles(theme: 'dark' | 'light') {
 
   const d = theme === 'dark';
 
+  const bg = d ? '#000000' : '#ffffff';
+  const border = d ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
+  const borderSubtle = d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const text = d ? '#ffffff' : '#000000';
+  const textSecondary = d ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+  const textTertiary = d ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+  const surfaceSubtle = d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
+  const monoFont = `ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace`;
+  const sansFont = `-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif`;
+
   const css = `
     .llm-chat {
       display: flex;
       flex-direction: column;
-      border-radius: 16px;
-      border: 1px solid ${d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
-      background: ${d ? '#09090b' : '#ffffff'};
+      border: 1px solid ${border};
+      background: ${bg};
       overflow: hidden;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: ${d ? '#fafafa' : '#09090b'};
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      font-family: ${sansFont};
+      color: ${text};
     }
 
     /* Header */
@@ -148,9 +157,7 @@ function injectChatStyles(theme: 'dark' | 'light') {
       align-items: center;
       justify-content: space-between;
       padding: 12px 16px;
-      border-bottom: 1px solid ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-      font-size: 13px;
-      background: ${d ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+      border-bottom: 1px solid ${borderSubtle};
     }
     
     /* Model Selector */
@@ -162,17 +169,19 @@ function injectChatStyles(theme: 'dark' | 'light') {
       align-items: center;
       gap: 6px;
       background: transparent;
-      border: 1px solid transparent;
-      color: ${d ? '#e5e5e5' : '#1a1a1a'};
-      font-weight: 500;
-      font-size: 13px;
-      padding: 4px 8px;
-      border-radius: 6px;
+      border: none;
+      color: ${text};
+      font-weight: 400;
+      font-size: 11px;
+      font-family: ${monoFont};
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 0;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: opacity 0.1s;
     }
     .llm-chat-model-btn:hover {
-      background: ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'};
+      opacity: 0.6;
     }
     .llm-chat-model-menu {
       position: absolute;
@@ -182,70 +191,69 @@ function injectChatStyles(theme: 'dark' | 'light') {
       width: 280px;
       max-height: 300px;
       overflow-y: auto;
-      background: ${d ? '#18181b' : '#ffffff'};
-      border: 1px solid ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-      border-radius: 8px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      background: ${d ? '#0a0a0a' : '#fafafa'};
+      border: 1px solid ${border};
       z-index: 50;
-      padding: 4px;
-      animation: llm-fadein 0.1s ease-out;
+      padding: 4px 0;
+      scrollbar-width: thin;
     }
     .llm-chat-model-group {
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      color: ${d ? '#a1a1aa' : '#71717a'};
+      padding: 8px 12px 4px;
+      font-size: 10px;
+      font-weight: 400;
+      color: ${textSecondary};
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-top: 4px;
+      letter-spacing: 0.08em;
+      font-family: ${monoFont};
     }
     .llm-chat-model-item {
       display: block;
       width: 100%;
       text-align: left;
-      padding: 6px 8px;
-      font-size: 13px;
-      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: ${monoFont};
+      color: ${textSecondary};
       background: transparent;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.1s;
     }
     .llm-chat-model-item:hover {
-      background: ${d ? '#27272a' : '#f4f4f5'};
-      color: ${d ? '#fb7185' : '#e11d48'};
+      color: ${text};
     }
     .llm-chat-model-item--active {
-      color: ${d ? '#fb7185' : '#e11d48'};
-      background: ${d ? 'rgba(251,113,133,0.1)' : 'rgba(225,29,72,0.05)'};
+      color: ${text};
     }
 
     /* Status */
     .llm-chat-status {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: ${d ? '#a1a1aa' : '#71717a'};
+      gap: 8px;
+      font-size: 10px;
+      font-family: ${monoFont};
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: ${textSecondary};
     }
     .llm-chat-dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
     }
     .llm-chat-dot--loading {
-      background: #f59e0b;
+      background: ${textSecondary};
       animation: llm-pulse 1.5s infinite;
     }
     .llm-chat-dot--ready {
-      background: #10b981;
-      box-shadow: 0 0 8px rgba(16,185,129,0.3);
+      background: ${text};
     }
     .llm-chat-dot--error {
-      background: #ef4444;
+      background: #ff3333;
     }
 
     /* Progress */
@@ -253,27 +261,30 @@ function injectChatStyles(theme: 'dark' | 'light') {
       padding: 0 16px 8px;
     }
     .llm-chat-progress-bar {
-      height: 2px;
-      background: ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+      height: 1px;
+      background: ${borderSubtle};
       overflow: hidden;
     }
     .llm-chat-progress-fill {
       height: 100%;
-      background: ${d ? '#fb7185' : '#e11d48'};
+      background: ${text};
       transition: width 0.3s ease;
     }
     .llm-chat-progress-text {
-      font-size: 11px;
-      color: ${d ? '#71717a' : '#a1a1aa'};
+      font-size: 10px;
+      font-family: ${monoFont};
+      color: ${textTertiary};
       margin-top: 4px;
       text-align: right;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     /* Messages */
     .llm-chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 20px 16px;
       display: flex;
       flex-direction: column;
       gap: 24px;
@@ -284,23 +295,27 @@ function injectChatStyles(theme: 'dark' | 'light') {
     .llm-chat-welcome {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       flex: 1;
-      text-align: center;
-      color: ${d ? '#52525b' : '#a1a1aa'};
-      padding: 40px;
+      color: ${textTertiary};
+      padding: 40px 0;
     }
     .llm-chat-welcome h3 {
-      font-size: 16px;
-      font-weight: 600;
-      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      font-size: 11px;
+      font-weight: 400;
+      font-family: ${monoFont};
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: ${textSecondary};
       margin: 0 0 8px;
     }
     .llm-chat-welcome p {
-      font-size: 14px;
+      font-size: 13px;
       margin: 0;
-      max-width: 300px;
+      max-width: 360px;
+      line-height: 1.6;
+      color: ${textTertiary};
     }
 
     /* Bubble */
@@ -308,86 +323,82 @@ function injectChatStyles(theme: 'dark' | 'light') {
       display: flex;
       flex-direction: column;
       max-width: 100%;
-      animation: llm-fadein 0.2s ease;
     }
     .llm-chat-bubble--user {
       align-self: flex-end;
-      max-width: 85%;
+      max-width: 80%;
     }
     .llm-chat-bubble--assistant {
       align-self: flex-start;
       width: 100%;
     }
     
-    /* User Message Style */
+    /* User message — flat, subtle bg, no radius */
     .llm-chat-user-content {
-      padding: 10px 16px;
-      border-radius: 12px;
+      padding: 10px 14px;
       font-size: 14px;
       line-height: 1.6;
       white-space: pre-wrap;
-      background: ${d ? '#fb7185' : '#e11d48'}; /* Cherry Red */
-      color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: ${surfaceSubtle};
+      border: 1px solid ${borderSubtle};
+      color: ${text};
     }
     
-    /* Assistant Message Style (Streamdown wrapper) */
+    /* Assistant message */
     .llm-chat-assistant-content {
       font-size: 14px;
       line-height: 1.7;
-      color: ${d ? '#e5e5e5' : '#1a1a1a'};
+      color: ${d ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)'};
     }
     
     /* Streamdown Overrides */
     .llm-chat-assistant-content pre {
-      background: ${d ? '#18181b' : '#f4f4f5'} !important;
-      border: 1px solid ${d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} !important;
-      border-radius: 8px !important;
+      background: ${surfaceSubtle} !important;
+      border: 1px solid ${borderSubtle} !important;
+      border-radius: 0 !important;
       padding: 12px !important;
       margin: 12px 0 !important;
     }
     .llm-chat-assistant-content code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+      font-family: ${monoFont} !important;
       font-size: 13px !important;
     }
     .llm-chat-assistant-content :not(pre) > code {
-      background: ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
-      padding: 2px 4px;
-      border-radius: 4px;
-      color: ${d ? '#fb7185' : '#e11d48'};
+      background: ${surfaceSubtle};
+      border: 1px solid ${borderSubtle};
+      padding: 1px 5px;
+      font-size: 12.5px !important;
     }
     
     /* Attachments in message */
     .llm-chat-msg-images {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 8px;
       justify-content: flex-end;
     }
     .llm-chat-msg-img {
-      width: 120px;
-      height: 120px;
-      border-radius: 8px;
+      width: 100px;
+      height: 100px;
       object-fit: cover;
-      border: 1px solid ${d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+      border: 1px solid ${border};
     }
 
     /* Error */
     .llm-chat-error {
       margin: 0 16px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      background: ${d ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.05)'};
-      border: 1px solid ${d ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'};
+      padding: 10px 14px;
+      border: 1px solid ${d ? 'rgba(255,50,50,0.2)' : 'rgba(200,0,0,0.15)'};
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
     .llm-chat-error-text {
-      font-size: 13px;
-      color: ${d ? '#f87171' : '#dc2626'};
+      font-size: 12px;
+      font-family: ${monoFont};
+      color: ${d ? '#ff6666' : '#cc0000'};
       flex: 1;
     }
     .llm-chat-error-retry {
@@ -395,29 +406,28 @@ function injectChatStyles(theme: 'dark' | 'light') {
       align-items: center;
       gap: 4px;
       padding: 4px 10px;
-      border-radius: 6px;
-      border: 1px solid ${d ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.2)'};
+      border: 1px solid ${d ? 'rgba(255,50,50,0.3)' : 'rgba(200,0,0,0.2)'};
       background: transparent;
-      color: ${d ? '#f87171' : '#dc2626'};
-      font-size: 12px;
+      color: ${d ? '#ff6666' : '#cc0000'};
+      font-size: 11px;
+      font-family: ${monoFont};
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       cursor: pointer;
-      font-weight: 500;
+    }
+    .llm-chat-error-retry:hover {
+      background: ${d ? 'rgba(255,50,50,0.08)' : 'rgba(200,0,0,0.04)'};
     }
 
     /* Input Area */
     .llm-chat-input-area {
       padding: 12px 16px 16px;
-      border-top: 1px solid ${d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
-      background: ${d ? '#09090b' : '#ffffff'};
+      border-top: 1px solid ${borderSubtle};
     }
 
-    @keyframes llm-fadein {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
     @keyframes llm-pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      50% { opacity: 0.2; }
     }
   `;
 
@@ -467,12 +477,12 @@ function ModelSelector({
         className="llm-chat-model-btn"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {displayModel} <ChevronDownIcon />
+        [{displayModel}] <ChevronDownIcon />
       </button>
 
       {isOpen && (
         <div className="llm-chat-model-menu">
-          <div className="llm-chat-model-group">WebLLM Models (Standard)</div>
+          <div className="llm-chat-model-group">[WebLLM]</div>
           {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
             <button
               key={key}
@@ -483,7 +493,7 @@ function ModelSelector({
             </button>
           ))}
           
-          <div className="llm-chat-model-group">Transformers.js Models</div>
+          <div className="llm-chat-model-group">[Transformers.js]</div>
           {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
             <button
               key={key}
@@ -515,7 +525,7 @@ function Chat({
   onError: onErrorProp,
   showHeader = true,
   showProgress = true,
-  welcomeMessage = 'Ready to assist. Type below to start.',
+  welcomeMessage = 'Ready to assist',
   onModelChange,
 }: ChatProps) {
   const { llm, isLoading, isReady, loadProgress, error, modelId, reload } = useLLM();
@@ -524,7 +534,7 @@ function Chat({
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [pendingMessage, setPendingMessage] = useState<string | null>(null); // queue for when loading
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [images, setImages] = useState<ImageAttachment[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -546,35 +556,27 @@ function Chat({
     if (!llm || !isReady || isProcessingRef.current) return;
     isProcessingRef.current = true;
 
-    // Create user message
     const userMsg: ChatMessageInternal = { 
       role: 'user', 
       content: userContent,
       images: attachedImages 
     };
     
-    // Add to UI immediately
     setMessages(prev => [...prev, userMsg]);
     setIsGenerating(true);
     setStreamingText('');
     abortRef.current = false;
 
-    // Build API messages
     const apiMessages: ChatMessage[] = [];
     
     if (systemPrompt) {
       apiMessages.push({ role: 'system', content: systemPrompt });
     }
 
-    // Add previous history
     currentMessages.forEach(m => {
-      // Simplification: Not sending images to LLM yet (requires vision-specific handling)
-      // Just sending text content for history context
       apiMessages.push({ role: m.role as ChatMessage['role'], content: m.content });
     });
 
-    // Add current message
-    // TODO: Vision support - construct content array if images present
     apiMessages.push({ role: 'user', content: userContent });
 
     try {
@@ -596,7 +598,6 @@ function Chat({
       const error = err instanceof Error ? err : new Error(String(err));
       onErrorProp?.(error);
       
-      // Add error message to chat
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: `Error: ${error.message}` 
@@ -620,8 +621,6 @@ function Chat({
     if (llm && isReady) {
       generate(text, messages, currentImages);
     } else if (isLoading) {
-      // Queue logic... simplified for now (only text queue)
-      // Ideally we'd queue images too but that's complex
       setPendingMessage(text);
     }
   };
@@ -647,7 +646,7 @@ function Chat({
     : isReady
       ? 'Ready'
       : isLoading
-        ? 'Loading...'
+        ? 'Loading'
         : 'Idle';
 
   return (
@@ -663,7 +662,14 @@ function Chat({
             />
           ) : (
              <div className="llm-chat-model-select">
-               <span style={{fontWeight: 600}}>{modelId?.split('/').pop()}</span>
+               <span style={{
+                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                 fontSize: '11px',
+                 textTransform: 'uppercase' as const,
+                 letterSpacing: '0.05em',
+               }}>
+                 [{modelId?.split('/').pop()}]
+               </span>
              </div>
           )}
           
@@ -701,8 +707,8 @@ function Chat({
       <div className="llm-chat-messages">
         {!isLoading && messages.length === 0 && !error && (
           <div className="llm-chat-welcome">
-            <h3>{welcomeMessage}</h3>
-            <p>I can help with coding, analysis, and writing. I support Markdown, Mermaid diagrams, and more.</p>
+            <h3>[{welcomeMessage}]</h3>
+            <p>Markdown, code blocks, Mermaid diagrams. Paste images with Ctrl+V.</p>
           </div>
         )}
 
@@ -788,7 +794,6 @@ function ChatApp({
 
   return (
     <LLMProvider 
-      // Force remount when model changes to ensure clean state
       key={model} 
       model={model as SupportedModel} 
       backend={defaultBackend}

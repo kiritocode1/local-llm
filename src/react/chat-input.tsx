@@ -1,6 +1,9 @@
 /**
- * ChatInput — Self-contained auto-resizing textarea with send button, image paste, and model selector slot.
+ * ChatInput — Self-contained auto-resizing textarea with send button, image paste/upload, and model selector slot.
  * Zero external dependencies. All styles embedded via CSS-in-JS.
+ * Brutalist minimal aesthetic — flat, no decoration.
+ *
+ * Supports: Ctrl+V paste, drag-and-drop, and click-to-upload for images.
  *
  * @example
  * ```tsx
@@ -69,7 +72,7 @@ export interface ChatInputProps {
   /** Current images attached */
   images?: ImageAttachment[];
 
-  /** Called when an image is added (paste/drop) */
+  /** Called when an image is added (paste/drop/upload) */
   onImageAdd?: (image: ImageAttachment) => void;
 
   /** Called when an image is removed */
@@ -85,25 +88,25 @@ export interface ChatInputProps {
 
 function SendIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 2L11 13" />
-      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
     </svg>
   );
 }
 
 function StopIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="6" width="12" height="12" />
     </svg>
   );
 }
 
 function ImageIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="0" ry="0" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <polyline points="21 15 16 10 5 21" />
     </svg>
@@ -112,7 +115,7 @@ function ImageIcon() {
 
 function XIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -120,7 +123,7 @@ function XIcon() {
 }
 
 // ============================================================================
-// Styles
+// Styles — Brutalist, flat, high-contrast. No shadows. No gradients.
 // ============================================================================
 
 const STYLE_ID = '__llm-chat-input-styles';
@@ -130,40 +133,44 @@ function injectStyles(theme: 'dark' | 'light') {
   const existing = document.getElementById(STYLE_ID);
   if (existing) existing.remove();
 
-  const isDark = theme === 'dark';
+  const d = theme === 'dark';
+
+  const border = d ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
+  const borderFocus = d ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
+  const bg = d ? '#000000' : '#ffffff';
+  const text = d ? '#ffffff' : '#000000';
+  const textMuted = d ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+  const textSecondary = d ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+  const monoFont = `ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace`;
+  const sansFont = `-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif`;
 
   const css = `
     .llm-ci {
       display: flex;
       flex-direction: column;
-      border-radius: 12px;
-      border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
-      background: ${isDark ? '#09090b' : '#ffffff'};
+      border: 1px solid ${border};
+      background: ${bg};
       padding: 12px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: border-color 0.15s;
       position: relative;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     .llm-ci:focus-within {
-      border-color: ${isDark ? '#fb7185' : '#e11d48'};
-      box-shadow: 0 0 0 2px ${isDark ? 'rgba(251,113,133,0.2)' : 'rgba(225,29,72,0.1)'}, 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-color: ${borderFocus};
     }
 
     /* Attached Images */
     .llm-ci-images {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 8px;
     }
     .llm-ci-image-preview {
       position: relative;
-      width: 64px;
-      height: 64px;
-      border-radius: 8px;
+      width: 52px;
+      height: 52px;
       overflow: hidden;
-      border: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-      animation: llm-ci-fadein 0.2s ease-out;
+      border: 1px solid ${border};
     }
     .llm-ci-image-preview img {
       width: 100%;
@@ -174,11 +181,10 @@ function injectStyles(theme: 'dark' | 'light') {
       position: absolute;
       top: 2px;
       right: 2px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.6);
-      color: white;
+      width: 16px;
+      height: 16px;
+      background: ${d ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)'};
+      color: ${text};
       border: none;
       display: flex;
       align-items: center;
@@ -200,16 +206,16 @@ function injectStyles(theme: 'dark' | 'light') {
       border: none;
       outline: none;
       background: transparent;
-      color: ${isDark ? '#fafafa' : '#09090b'};
+      color: ${text};
       font-size: 14px;
       line-height: 1.5;
       padding: 0;
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: ${sansFont};
       scrollbar-width: thin;
     }
     .llm-ci textarea::placeholder {
-      color: ${isDark ? '#52525b' : '#a1a1aa'};
+      color: ${textMuted};
     }
 
     /* Toolbar */
@@ -218,12 +224,12 @@ function injectStyles(theme: 'dark' | 'light') {
       align-items: center;
       justify-content: space-between;
       margin-top: 8px;
-      min-height: 32px;
+      min-height: 28px;
     }
     .llm-ci-left-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 2px;
     }
     .llm-ci-right-actions {
       display: flex;
@@ -231,64 +237,63 @@ function injectStyles(theme: 'dark' | 'light') {
       gap: 8px;
     }
 
-    /* Buttons */
+    /* Icon Buttons */
     .llm-ci-btn-icon {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 28px;
       height: 28px;
-      border-radius: 6px;
       border: none;
       background: transparent;
-      color: ${isDark ? '#a1a1aa' : '#71717a'};
+      color: ${textSecondary};
       cursor: pointer;
-      transition: all 0.15s;
+      transition: color 0.1s;
     }
     .llm-ci-btn-icon:hover {
-      background: ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'};
-      color: ${isDark ? '#fafafa' : '#09090b'};
+      color: ${text};
     }
 
-    /* Send Button */
+    /* Send / Stop — flat, monospace, uppercase */
     .llm-ci-send {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 28px;
       padding: 0 12px;
-      border-radius: 14px;
-      border: none;
-      font-size: 13px;
-      font-weight: 500;
+      border: 1px solid ${border};
+      font-size: 10px;
+      font-weight: 400;
+      font-family: ${monoFont};
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.1s;
       gap: 6px;
+      background: transparent;
+      color: ${textSecondary};
     }
     .llm-ci-send--active {
-      background: ${isDark ? '#fb7185' : '#e11d48'};
-      color: white;
+      background: ${text};
+      color: ${bg};
+      border-color: ${text};
     }
     .llm-ci-send--active:hover {
-      background: ${isDark ? '#f43f5e' : '#be123c'}; /* slightly darker rose */
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(225,29,72, 0.2);
-    }
-    .llm-ci-send--active:active {
-      transform: translateY(0);
+      opacity: 0.8;
     }
     .llm-ci-send--disabled {
-      background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
-      color: ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+      color: ${textMuted};
+      border-color: ${d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
       cursor: not-allowed;
     }
     .llm-ci-send--stop {
       background: transparent;
-      border: 1px solid ${isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.2)'};
-      color: ${isDark ? '#f87171' : '#ef4444'};
+      border-color: ${border};
+      color: ${textSecondary};
     }
     .llm-ci-send--stop:hover {
-      background: ${isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.05)'};
+      border-color: ${borderFocus};
+      color: ${text};
     }
 
     /* Model Selector Slot */
@@ -296,27 +301,26 @@ function injectStyles(theme: 'dark' | 'light') {
       margin-right: auto;
     }
 
+    /* Hidden file input */
+    .llm-ci-file-input {
+      display: none;
+    }
+
     /* Drag Overlay */
     .llm-ci-drag-overlay {
       position: absolute;
       inset: 0;
-      background: ${isDark ? 'rgba(24,24,27,0.8)' : 'rgba(255,255,255,0.8)'};
-      backdrop-filter: blur(2px);
+      background: ${d ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)'};
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
       z-index: 10;
-      animation: llm-ci-fadein 0.15s ease-out;
-      border: 2px dashed ${isDark ? '#fb7185' : '#e11d48'};
-      color: ${isDark ? '#fb7185' : '#e11d48'};
-      font-weight: 500;
-      font-size: 14px;
-    }
-
-    @keyframes llm-ci-fadein {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+      border: 1px dashed ${textSecondary};
+      color: ${textSecondary};
+      font-size: 11px;
+      font-family: ${monoFont};
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
   `;
 
@@ -348,6 +352,7 @@ function ChatInput({
   modelSelector,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   // Inject styles
@@ -418,6 +423,17 @@ function ChatInput({
     }
   }, [processFile]);
 
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files.item(i);
+      if (file) processFile(file);
+    }
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  }, [processFile]);
+
   const hasValue = value.trim().length > 0 || images.length > 0;
   const canSend = hasValue && !disabled && !isGenerating;
 
@@ -439,9 +455,19 @@ function ChatInput({
     >
       {isDragging && (
         <div className="llm-ci-drag-overlay">
-          Drop image to attach
+          [Drop image to attach]
         </div>
       )}
+
+      {/* Hidden file input for click-to-upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="llm-ci-file-input"
+        onChange={handleFileSelect}
+      />
 
       {/* Image Previews */}
       {images.length > 0 && (
@@ -483,11 +509,8 @@ function ChatInput({
           <button 
             type="button" 
             className="llm-ci-btn-icon" 
-            onClick={() => {
-              // Trigger hidden file input could be added here
-              // For now relying on paste/drag
-            }}
-            title="Paste or Drag image"
+            onClick={() => fileInputRef.current?.click()}
+            title="Attach image (or Ctrl+V to paste)"
           >
             <ImageIcon />
           </button>
