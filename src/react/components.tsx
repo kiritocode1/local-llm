@@ -470,10 +470,15 @@ function Chat({
 
       {/* Error Banner */}
       {error && (
-        <div className="mx-6 mt-6 p-4 border border-red-500/30 text-red-500 bg-transparent flex justify-between items-center text-[10px] tracking-[0.2em] uppercase">
-          <span className="font-light">{error.message}</span>
-          <button onClick={reload} className="hover:opacity-70 transition-opacity">
-            [ REBOOT ]
+        <div className="mx-6 md:mx-8 mt-6 p-6 border border-red-500/30 text-red-500 bg-red-500/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[10px] tracking-[0.2em] uppercase rounded-md">
+          <span className="font-light leading-relaxed max-w-2xl">{error.message}</span>
+          <button 
+            onClick={reload} 
+            className="group flex items-center justify-center min-w-max gap-3 px-6 py-3 rounded-md border border-red-500/30 bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all duration-300"
+          >
+            <RotateCcw className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[11px] font-bold tracking-[0.2em] uppercase">[ REBOOT ]</span>
+            <span className="text-[10px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest">再起動</span>
           </button>
         </div>
       )}

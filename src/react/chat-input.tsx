@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useRef, useEffect, useCallback, useState } from 'react';
-import { Send, Square, ImagePlus, X } from 'lucide-react';
+import { Send, Square, ImagePlus, X, Paperclip } from 'lucide-react';
 
 export interface ImageAttachment {
   id: string;
@@ -191,7 +191,7 @@ export function ChatInput({
       />
 
       <div className="flex items-center justify-between mt-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           {modelSelector && (
             <div>
               {modelSelector}
@@ -200,37 +200,43 @@ export function ChatInput({
           
           <button 
             type="button" 
-            className="text-[11px] uppercase tracking-[0.2em] text-current opacity-50 hover:opacity-100 transition-opacity font-light"
+            className="group flex items-center justify-center gap-2 px-4 py-2 rounded border bg-transparent border-current/20 text-current hover:bg-current/5 transition-all duration-300"
             onClick={() => fileInputRef.current?.click()}
             title="Attach image or PDF (Ctrl+V to paste)"
           >
-            [ FILE ]
+            <Paperclip className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap">[ FILE ]</span>
+            <span className="text-[9px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest whitespace-nowrap">ファイル</span>
           </button>
           
           {actions}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           {isGenerating ? (
             <button
               type="button"
-              className="text-red-500 hover:opacity-70 font-light text-[11px] uppercase tracking-[0.2em] transition-opacity cursor-pointer"
+              className="group flex items-center justify-center gap-2 px-4 py-2 rounded border bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20 transition-all duration-300"
               onClick={onStop}
             >
-              [ STOP ]
+              <Square className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap">[ STOP ]</span>
+              <span className="text-[9px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest whitespace-nowrap">停止</span>
             </button>
           ) : (
             <button
               type="button"
-              className={`text-[11px] font-light uppercase tracking-[0.2em] transition-opacity ${
+              className={`group flex items-center justify-center gap-2 px-5 py-2 rounded transition-all duration-300 ${
                 canSend 
-                  ? 'text-current opacity-100 hover:opacity-70 cursor-pointer' 
-                  : 'text-current opacity-20 cursor-not-allowed'
+                  ? (theme === 'dark' ? 'bg-[#fafafa] text-black border hover:opacity-80' : 'bg-black text-[#fafafa] border hover:opacity-80') 
+                  : (theme === 'dark' ? 'bg-[#fafafa]/10 text-[#fafafa]/40 cursor-not-allowed border border-transparent' : 'bg-black/10 text-black/40 cursor-not-allowed border border-transparent')
               }`}
               onClick={onSend}
               disabled={!canSend}
             >
-              [ SEND ]
+              <Send className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap">[ SEND ]</span>
+              <span className="text-[9px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest whitespace-nowrap">送信</span>
             </button>
           )}
         </div>
