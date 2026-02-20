@@ -90,7 +90,13 @@ interface ChatMessageInternal {
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful AI assistant.
 - You can use full Markdown (bold, italic, headers, lists).
 - You can use Code Blocks with language syntax highlighting.
-- You can use Mermaid diagrams (\`\`\`mermaid ... \`\`\`).
+- You can use Mermaid diagrams to visualize structured data, processes, and architectures. 
+  - IMPORTANT: ALWAYS use exactly \`\`\`mermaid as the language tag. NEVER use \`\`\`mer, \`\`\`mmd, etc. 
+  - For example:
+    \`\`\`mermaid
+    graph TD
+      A --> B
+    \`\`\`
 - You can use LaTeX math ($$ ... $$).`;
 
 const ALL_MODELS = { ...WEBLLM_MODELS, ...TRANSFORMERS_MODELS };
