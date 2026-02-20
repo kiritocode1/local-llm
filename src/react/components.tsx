@@ -137,20 +137,20 @@ function isVisionModel(modelId: string): boolean {
 // ============================================================================
 
 const markdownComponents = {
-  h1: ({ children }: any) => <h1 className="text-2xl font-light uppercase tracking-tight mt-6 mb-4 text-white border-b border-white/30 pb-2">{children}</h1>,
-  h2: ({ children }: any) => <h2 className="text-xl font-light uppercase tracking-tight mt-6 mb-4 text-white border-b border-white/30 pb-2">{children}</h2>,
-  h3: ({ children }: any) => <h3 className="text-lg font-light uppercase tracking-tight mt-4 mb-3 text-white">{children}</h3>,
-  h4: ({ children }: any) => <h4 className="text-base font-light uppercase tracking-tight mt-4 mb-2 text-white">{children}</h4>,
-  p: ({ children }: any) => <p className="leading-relaxed [&:not(:first-child)]:mt-4 text-white/80 text-sm font-light font-mono">{children}</p>,
-  ul: ({ children }: any) => <ul className="my-4 ml-6 list-square [&>li]:mt-2 text-white/80 font-mono text-sm font-light">{children}</ul>,
-  ol: ({ children }: any) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2 text-white/80 font-mono text-sm font-light">{children}</ol>,
+  h1: ({ children }: any) => <h1 className="text-2xl font-light uppercase tracking-tight mt-6 mb-4 text-current border-b border-current/30 pb-2">{children}</h1>,
+  h2: ({ children }: any) => <h2 className="text-xl font-light uppercase tracking-tight mt-6 mb-4 text-current border-b border-current/30 pb-2">{children}</h2>,
+  h3: ({ children }: any) => <h3 className="text-lg font-light uppercase tracking-tight mt-4 mb-3 text-current">{children}</h3>,
+  h4: ({ children }: any) => <h4 className="text-base font-light uppercase tracking-tight mt-4 mb-2 text-current">{children}</h4>,
+  p: ({ children }: any) => <p className="leading-relaxed [&:not(:first-child)]:mt-4 text-current/80 text-sm font-light font-mono">{children}</p>,
+  ul: ({ children }: any) => <ul className="my-4 ml-6 list-square [&>li]:mt-2 text-current/80 font-mono text-sm font-light">{children}</ul>,
+  ol: ({ children }: any) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2 text-current/80 font-mono text-sm font-light">{children}</ol>,
   li: ({ children }: any) => <li>{children}</li>,
-  blockquote: ({ children }: any) => <blockquote className="mt-4 border border-white/30 p-4 italic text-white/60 font-mono text-sm font-light bg-transparent">{children}</blockquote>,
-  a: ({ href, children }: any) => <a href={href} className="underline text-white hover:bg-white hover:text-black transition-colors" target="_blank" rel="noopener noreferrer">{children}</a>,
-  table: ({ children }: any) => <div className="my-4 w-full overflow-y-auto border border-white/30"><table className="w-full text-sm font-mono font-light text-white">{children}</table></div>,
-  tr: ({ children }: any) => <tr className="m-0 border-b border-white/30 p-0 hover:bg-white/5">{children}</tr>,
-  th: ({ children }: any) => <th className="border-r border-white/30 last:border-r-0 text-white/50 px-4 py-2 font-light uppercase text-left">{children}</th>,
-  td: ({ children }: any) => <td className="border-r border-white/30 last:border-r-0 px-4 py-2 text-left text-white/80">{children}</td>,
+  blockquote: ({ children }: any) => <blockquote className="mt-4 border border-current/30 p-4 italic text-current/60 font-mono text-sm font-light bg-transparent">{children}</blockquote>,
+  a: ({ href, children }: any) => <a href={href} className="underline text-current hover:opacity-70 transition-opacity" target="_blank" rel="noopener noreferrer">{children}</a>,
+  table: ({ children }: any) => <div className="my-4 w-full overflow-y-auto border border-current/30"><table className="w-full text-sm font-mono font-light text-current">{children}</table></div>,
+  tr: ({ children }: any) => <tr className="m-0 border-b border-current/30 p-0 hover:bg-current/5">{children}</tr>,
+  th: ({ children }: any) => <th className="border-r border-current/30 last:border-r-0 text-current/50 px-4 py-2 font-light uppercase text-left">{children}</th>,
+  td: ({ children }: any) => <td className="border-r border-current/30 last:border-r-0 px-4 py-2 text-left text-current/80">{children}</td>,
 };
 
 // ============================================================================
@@ -160,9 +160,11 @@ const markdownComponents = {
 function ModelSelector({ 
   currentModel, 
   onSelect,
+  theme,
 }: { 
   currentModel: string | null, 
   onSelect: (id: string) => void,
+  theme: 'dark' | 'light',
 }): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -198,16 +200,19 @@ function ModelSelector({
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-black dark:bg-white border border-white/20 dark:border-black/20 z-50 p-2 scrollbar-none">
-          <div className="px-3 py-2 text-[10px] font-light text-current opacity-50 uppercase tracking-widest border-b border-white/10 dark:border-black/10 mb-1">WebLLM</div>
+        <div className={cn(
+          "absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto border z-50 p-2 scrollbar-none",
+          theme === 'dark' ? "bg-black border-white/20" : "bg-[#fafafa] border-black/20"
+        )}>
+          <div className="px-3 py-2 text-[10px] font-light text-current opacity-50 uppercase tracking-widest border-b border-current/10 mb-1">WebLLM</div>
           {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
                 "block w-full text-left px-3 py-2.5 text-[11px] font-light uppercase tracking-widest truncate transition-colors text-current",
                 currentModel === value 
-                  ? "bg-white text-black dark:bg-black dark:text-white" 
-                  : "hover:bg-white/10 dark:hover:bg-black/10"
+                  ? (theme === 'dark' ? "bg-white text-black" : "bg-black text-white")
+                  : "hover:opacity-60"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
@@ -215,15 +220,15 @@ function ModelSelector({
             </button>
           ))}
           
-          <div className="px-3 py-2 text-[10px] font-light opacity-50 uppercase tracking-widest mt-4 border-b border-white/10 dark:border-black/10 mb-1">Transformers.js</div>
+          <div className="px-3 py-2 text-[10px] font-light text-current opacity-50 uppercase tracking-widest mt-4 border-b border-current/10 mb-1">Transformers.js</div>
           {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
                 "block w-full text-left px-3 py-2.5 text-[11px] font-light uppercase tracking-widest truncate transition-colors text-current",
                 currentModel === value 
-                  ? "bg-white text-black dark:bg-black dark:text-white" 
-                  : "hover:bg-white/10 dark:hover:bg-black/10"
+                  ? (theme === 'dark' ? "bg-white text-black" : "bg-black text-white")
+                  : "hover:opacity-60"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
@@ -425,6 +430,7 @@ function Chat({
               <ModelSelector 
                 currentModel={modelId} 
                 onSelect={onModelChange}
+                theme={localTheme}
               />
             ) : (
                <div className="flex items-center gap-2">
@@ -565,6 +571,7 @@ function Chat({
           images={images}
           onImageAdd={img => setImages(prev => [...prev, img])}
           onImageRemove={id => setImages(prev => prev.filter(img => img.id !== id))}
+          theme={localTheme}
         />
       </div>
     </div>

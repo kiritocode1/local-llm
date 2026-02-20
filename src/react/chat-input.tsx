@@ -24,6 +24,7 @@ export interface ChatInputProps {
   onImageAdd?: (image: ImageAttachment) => void;
   onImageRemove?: (id: string) => void;
   modelSelector?: React.ReactNode;
+  theme?: 'dark' | 'light';
 }
 
 export function ChatInput({
@@ -41,6 +42,7 @@ export function ChatInput({
   onImageAdd,
   onImageRemove,
   modelSelector,
+  theme = 'dark',
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,8 +147,8 @@ export function ChatInput({
       onDrop={handleDrop}
     >
       {isDragging && (
-        <div className="absolute inset-x-0 inset-y-0 bg-current/90 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
-          <span className="text-black dark:text-white font-light tracking-[0.2em] uppercase text-xs">DROP FILE TO ATTACH</span>
+        <div className={`absolute inset-x-0 inset-y-0 flex flex-col items-center justify-center z-20 backdrop-blur-sm transition-colors ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black'}`}>
+          <span className="font-light tracking-[0.2em] uppercase text-xs">DROP FILE TO ATTACH</span>
         </div>
       )}
 
@@ -166,7 +168,7 @@ export function ChatInput({
               <img src={img.dataUrl} alt="attachment" className="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0" />
               <button 
                 type="button"
-                className="absolute top-0 right-0 w-5 h-5 bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]"
+                className={`absolute top-0 right-0 w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px] ${theme === 'dark' ? 'bg-black/80 text-white' : 'bg-white/80 text-black'}`}
                 onClick={() => onImageRemove?.(img.id)}
               >
                 [X]
