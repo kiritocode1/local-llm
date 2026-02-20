@@ -113,10 +113,14 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful AI assistant.
 - You can use Code Blocks with language syntax highlighting.
 - You can use Mermaid diagrams to visualize structured data, processes, and architectures. 
   - IMPORTANT: ALWAYS use exactly \`\`\`mermaid as the language tag. NEVER use \`\`\`mer, \`\`\`mmd, etc. 
+  - IMPORTANT: You MUST specify a valid Mermaid diagram type immediately after the tag (e.g., \`graph TD\`, \`flowchart LR\`, \`sequenceDiagram\`, \`stateDiagram\`, \`classDiagram\`).
+  - Do not invent ad-hoc pseudo-code formats. Use strict Mermaid syntax. Node definitions look like: \`A[Node Title] --> B(Other Title)\`.
   - For example:
     \`\`\`mermaid
     graph TD
-      A --> B
+      A[Start of testing] --> B{Is valid?}
+      B -- Yes --> C[Continue]
+      B -- No --> D[Error]
     \`\`\`
 - You can use LaTeX math ($$ ... $$).`;
 
