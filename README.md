@@ -21,8 +21,10 @@
 - ⚛️ **React hooks** — `useChat`, `useStream`, `useCompletion` with eager background loading
 - 🔤 **Type-safe model selection** — full autocomplete for 30+ supported models across both backends
 - 📝 **Streaming support** — real-time token output with abort control
+- 📄 **PDF & Image Processing** — Extract text from PDFs natively and easily pass multimodal image attachments
 - 🔄 **Message queueing** — users can type while models download; messages are processed once ready
 - 🧩 **Vanilla JS friendly** — works outside React with DOM helpers and a simple `createLLM()` API
+- ⚡ **Instant Builds** — Bundled via `tsup` for lightning-fast compilation
 - 📦 **Zero config** — auto-detects WebGPU/WASM and picks the best backend
 
 ## Installation
@@ -408,6 +410,8 @@ import { ChatInput } from "@blank-utils/llm/react";
 - ⌨️ Enter to send, Shift+Enter for newline
 - ⏹️ Stop button while generating
 - 🎨 Dark/light theme support
+- 📄 **Drag-and-drop or click to upload PDF files for automatic local text extraction (OCR)**
+- 🖼️ **Paste/upload images directly into multimodal models**
 
 ---
 
@@ -508,10 +512,6 @@ You can use either the **alias** (short name) or the **full model ID** when spec
 | `qwen-2.5-7b`           | Qwen 2.5 7B                  | Large                       |
 | `qwen-2.5-coder-0.5b`   | Qwen 2.5 Coder 0.5B          | Code-focused                |
 | `qwen-2.5-coder-1.5b`   | Qwen 2.5 Coder 1.5B          | Code-focused                |
-| `qwen-3-0.6b`           | Qwen 3 0.6B                  | Latest gen                  |
-| `qwen-3-1.7b`           | Qwen 3 1.7B                  | Latest gen                  |
-| `qwen-3-4b`             | Qwen 3 4B                    | Latest gen                  |
-| `qwen-3-8b`             | Qwen 3 8B                    | Latest gen                  |
 | `gemma-2-2b`            | Gemma 2 2B                   | Google, efficient           |
 | `gemma-2-2b-1k`         | Gemma 2 2B (1K ctx)          | Lower memory                |
 | `gemma-2-9b`            | Gemma 2 9B                   | Large                       |
@@ -532,7 +532,6 @@ You can use either the **alias** (short name) or the **full model ID** when spec
 | `qwen-2.5-1.5b`       | `onnx-community/Qwen2.5-1.5B-Instruct`       | Good quality |
 | `qwen-2.5-coder-0.5b` | `onnx-community/Qwen2.5-Coder-0.5B-Instruct` | Code         |
 | `qwen-2.5-coder-1.5b` | `onnx-community/Qwen2.5-Coder-1.5B-Instruct` | Code         |
-| `qwen-3-0.6b`         | `onnx-community/Qwen3-0.6B-ONNX`             | Latest gen   |
 | `smollm2-135m`        | `HuggingFaceTB/SmolLM2-135M-Instruct`        | Ultra fast   |
 | `smollm2-360m`        | `HuggingFaceTB/SmolLM2-360M-Instruct`        | Fast         |
 | `smollm2-1.7b`        | `HuggingFaceTB/SmolLM2-1.7B-Instruct`        | Good         |
@@ -586,13 +585,10 @@ bun test
 
 ### Build Pipeline
 
-| Script        | What it does                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `clean`       | Removes `dist/`                                                                                                    |
-| `build:js`    | Bundles `src/index.ts` → `dist/index.js` and `src/react/index.tsx` → `dist/react/index.js` (ESM, externals: react) |
-| `postbuild`   | Copies WASM + ONNX runtime assets into `dist/` and `dist/react/`                                                   |
-| `build:types` | Generates `.d.ts` declaration files via `tsc`                                                                      |
-| `build`       | Runs all of the above in sequence                                                                                  |
+| Script  | What it does                                               |
+| ------- | ---------------------------------------------------------- |
+| `clean` | Removes `dist/`                                            |
+| `build` | Super-fast bundling via `tsup`, compiling ESM code & types |
 
 ### Package Exports
 
