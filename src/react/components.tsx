@@ -1,23 +1,3 @@
-/**
- * Chat — A complete, self-contained chat interface for @blank-utils/llm.
- * Drop inside <LLMProvider> and get a working chat UI in one line.
- *
- * Brutalist minimal aesthetic — flat black, high contrast, no decoration.
- *
- * @example
- * ```tsx
- * import { LLMProvider, Chat, ChatApp } from "@blank-utils/llm/react";
- *
- * // Option A: Zero setup (includes provider + model switching)
- * <ChatApp defaultModel="qwen-2.5-0.5b" />
- *
- * // Option B: Manual provider
- * <LLMProvider model="qwen-2.5-0.5b">
- *   <Chat />
- * </LLMProvider>
- * ```
- */
-
 import * as React from 'react';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { useLLM, type UseChatOptions, LLMProvider, type LLMProviderProps } from './core';
@@ -25,61 +5,53 @@ import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-inp
 import { WEBLLM_MODELS, TRANSFORMERS_MODELS, type SupportedModel } from '../models';
 import type { ChatMessage } from '../types';
 
-// Streamdown imports (externalized in build)
+import { RotateCcw, ChevronDown } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Streamdown imports
 // @ts-ignore
 import { Streamdown } from 'streamdown';
 // @ts-ignore
 import { code } from '@streamdown/code';
 // @ts-ignore
 import { mermaid } from '@streamdown/mermaid';
+// @ts-ignore
+import { math } from '@streamdown/math';
+
+import 'katex/dist/katex.min.css';
+import 'streamdown/styles.css';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface ChatProps {
-  /** System prompt for the conversation */
   systemPrompt?: string;
-  /** Placeholder text for the input */
   placeholder?: string;
-  /** Theme */
   theme?: 'dark' | 'light';
-  /** Additional className for the outermost container */
   className?: string;
-  /** Maximum height of the chat container. Default: '600px' */
   maxHeight?: string;
-  /** Options passed to useChat internally */
   chatOptions?: Omit<UseChatOptions, 'systemPrompt'>;
-  /** Custom actions rendered in the input toolbar */
   inputActions?: React.ReactNode;
-  /** Called when a message is sent */
   onSend?: (message: string) => void;
-  /** Called when a response is received */
   onResponse?: (response: string) => void;
-  /** Called on error */
   onError?: (error: Error) => void;
-  /** Whether to show the model info header. Default: true */
   showHeader?: boolean;
-  /** Whether to show loading progress. Default: true */
   showProgress?: boolean;
-  /** Custom welcome message when chat is empty */
   welcomeMessage?: string;
-  /** Called when the user selects a new model in the dropdown */
   onModelChange?: (modelId: string) => void;
 }
 
 export interface ChatAppProps extends ChatProps {
-  /** Default model ID to start with */
   defaultModel?: SupportedModel;
-  /** Default backend to use */
   defaultBackend?: 'webllm' | 'transformers' | 'auto';
-  /** Auto-load model on mount. Default: true */
   autoLoad?: boolean;
 }
-
-// ============================================================================
-// Internal Types & Utils
-// ============================================================================
 
 interface ChatMessageInternal {
   role: 'user' | 'assistant' | 'system';
@@ -95,452 +67,53 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful AI assistant.
 
 const ALL_MODELS = { ...WEBLLM_MODELS, ...TRANSFORMERS_MODELS };
 
-// ============================================================================
-// Icons
-// ============================================================================
-
-function RetryIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 4 23 10 17 10" />
-      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-// ============================================================================
-// Styles — Brutalist, flat, high-contrast. No shadows. No gradients.
-//           No border-radius. Pure black. Monospace labels.
-// ============================================================================
-
-const STYLE_ID = '__llm-chat-styles';
-
-function injectChatStyles(theme: 'dark' | 'light') {
-  if (typeof document === 'undefined') return;
-  const existing = document.getElementById(STYLE_ID);
-  if (existing) existing.remove();
-
-  const d = theme === 'dark';
-
-  const bg = d ? '#000000' : '#ffffff';
-  const border = d ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
-  const borderSubtle = d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-  const text = d ? '#ffffff' : '#000000';
-  const textSecondary = d ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-  const textTertiary = d ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
-  const surfaceSubtle = d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
-  const monoFont = `ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace`;
-  const sansFont = `-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif`;
-
-  const css = `
-    .llm-chat {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid ${border};
-      background: ${bg};
-      overflow: hidden;
-      font-family: ${sansFont};
-      color: ${text};
-    }
-
-    /* Header */
-    .llm-chat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 1px solid ${borderSubtle};
-    }
-    
-    /* Model Selector */
-    .llm-chat-model-select {
-      position: relative;
-    }
-    .llm-chat-model-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: transparent;
-      border: none;
-      color: ${text};
-      font-weight: 400;
-      font-size: 11px;
-      font-family: ${monoFont};
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 4px 0;
-      cursor: pointer;
-      transition: opacity 0.1s;
-    }
-    .llm-chat-model-btn:hover {
-      opacity: 0.6;
-    }
-    .llm-chat-model-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      margin-top: 4px;
-      width: 280px;
-      max-height: 300px;
-      overflow-y: auto;
-      background: ${d ? '#0a0a0a' : '#fafafa'};
-      border: 1px solid ${border};
-      z-index: 50;
-      padding: 4px 0;
-      scrollbar-width: thin;
-    }
-    .llm-chat-model-group {
-      padding: 8px 12px 4px;
-      font-size: 10px;
-      font-weight: 400;
-      color: ${textSecondary};
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-family: ${monoFont};
-    }
-    .llm-chat-model-item {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-family: ${monoFont};
-      color: ${textSecondary};
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: color 0.1s;
-    }
-    .llm-chat-model-item:hover {
-      color: ${text};
-    }
-    .llm-chat-model-item--active {
-      color: ${text};
-    }
-
-    /* Status */
-    .llm-chat-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 10px;
-      font-family: ${monoFont};
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: ${textSecondary};
-    }
-    .llm-chat-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-    }
-    .llm-chat-dot--loading {
-      background: ${textSecondary};
-      animation: llm-pulse 1.5s infinite;
-    }
-    .llm-chat-dot--ready {
-      background: ${text};
-    }
-    .llm-chat-dot--error {
-      background: #ff3333;
-    }
-
-    /* Progress */
-    .llm-chat-progress {
-      padding: 0 16px 8px;
-    }
-    .llm-chat-progress-bar {
-      height: 1px;
-      background: ${borderSubtle};
-      overflow: hidden;
-    }
-    .llm-chat-progress-fill {
-      height: 100%;
-      background: ${text};
-      transition: width 0.3s ease;
-    }
-    .llm-chat-progress-text {
-      font-size: 10px;
-      font-family: ${monoFont};
-      color: ${textTertiary};
-      margin-top: 4px;
-      text-align: right;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Messages */
-    .llm-chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      scrollbar-width: thin;
-    }
-    
-    /* Welcome */
-    .llm-chat-welcome {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      flex: 1;
-      color: ${textTertiary};
-      padding: 40px 0;
-    }
-    .llm-chat-welcome h3 {
-      font-size: 11px;
-      font-weight: 400;
-      font-family: ${monoFont};
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: ${textSecondary};
-      margin: 0 0 8px;
-    }
-    .llm-chat-welcome p {
-      font-size: 13px;
-      margin: 0;
-      max-width: 360px;
-      line-height: 1.6;
-      color: ${textTertiary};
-    }
-
-    /* Bubble */
-    .llm-chat-bubble {
-      display: flex;
-      flex-direction: column;
-      max-width: 100%;
-    }
-    .llm-chat-bubble--user {
-      align-self: flex-end;
-      max-width: 80%;
-      overflow-wrap: break-word;
-    }
-    .llm-chat-bubble--assistant {
-      align-self: flex-start;
-      width: 100%;
-      min-width: 0; /* Prevents flex children from expanding past 100% */
-      overflow-x: hidden;
-    }
-    
-    /* User message — flat, subtle bg, no radius */
-    .llm-chat-user-content {
-      padding: 10px 14px;
-      font-size: 14px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      background: ${surfaceSubtle};
-      border: 1px solid ${borderSubtle};
-      color: ${text};
-    }
-    
-    /* Streamdown Overrides / Markdown Styling */
-    .llm-chat-assistant-content {
-      font-size: 14px;
-      line-height: 1.7;
-      color: ${text};
-      word-wrap: break-word;
-    }
-    .llm-chat-assistant-content > *:first-child { margin-top: 0; }
-    .llm-chat-assistant-content > *:last-child { margin-bottom: 0; }
-    
-    .llm-chat-assistant-content p {
-      margin: 0 0 12px 0;
-    }
-    
-    .llm-chat-assistant-content h1,
-    .llm-chat-assistant-content h2,
-    .llm-chat-assistant-content h3,
-    .llm-chat-assistant-content h4 {
-      margin: 20px 0 10px 0;
-      color: ${text};
-      font-weight: 600;
-      line-height: 1.3;
-    }
-    .llm-chat-assistant-content h1 { font-size: 1.5em; }
-    .llm-chat-assistant-content h2 { font-size: 1.3em; }
-    .llm-chat-assistant-content h3 { font-size: 1.1em; }
-    
-    .llm-chat-assistant-content ul,
-    .llm-chat-assistant-content ol {
-      margin: 0 0 12px 0;
-      padding-left: 24px;
-    }
-    .llm-chat-assistant-content li {
-      margin-bottom: 4px;
-    }
-    
-    .llm-chat-assistant-content pre {
-      background: ${surfaceSubtle} !important;
-      border: 1px solid ${borderSubtle} !important;
-      border-radius: 6px !important;
-      padding: 12px !important;
-      margin: 12px 0 !important;
-      overflow-x: auto !important;
-      white-space: pre !important;
-      max-width: 100%;
-    }
-    .llm-chat-assistant-content code {
-      font-family: ${monoFont} !important;
-      font-size: 13px !important;
-      white-space: inherit;
-    }
-    .llm-chat-assistant-content :not(pre) > code {
-      background: ${surfaceSubtle};
-      border: 1px solid ${borderSubtle};
-      border-radius: 4px;
-      padding: 2px 5px;
-      font-size: 12.5px !important;
-      white-space: pre-wrap !important;
-      word-break: break-word;
-    }
-    
-    .llm-chat-assistant-content blockquote {
-      border-left: 3px solid ${borderSubtle};
-      margin: 0 0 12px 0;
-      padding-left: 12px;
-      color: ${textTertiary};
-    }
-    
-    .llm-chat-assistant-content a {
-      color: #3b82f6;
-      text-decoration: none;
-    }
-    .llm-chat-assistant-content a:hover {
-      text-decoration: underline;
-    }
-    
-    .llm-chat-assistant-content table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 12px 0;
-    }
-    .llm-chat-assistant-content th,
-    .llm-chat-assistant-content td {
-      border: 1px solid ${borderSubtle};
-      padding: 6px 10px;
-      text-align: left;
-    }
-    .llm-chat-assistant-content th {
-      background: ${surfaceSubtle};
-      font-weight: 600;
-    }
-    
-    /* Attachments in message */
-    .llm-chat-msg-images {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 8px;
-      justify-content: flex-end;
-    }
-    .llm-chat-msg-img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border: 1px solid ${border};
-    }
-
-    /* Error */
-    .llm-chat-error {
-      margin: 0 16px;
-      padding: 10px 14px;
-      border: 1px solid ${d ? 'rgba(255,50,50,0.2)' : 'rgba(200,0,0,0.15)'};
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .llm-chat-error-text {
-      font-size: 12px;
-      font-family: ${monoFont};
-      color: ${d ? '#ff6666' : '#cc0000'};
-      flex: 1;
-    }
-    .llm-chat-error-retry {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border: 1px solid ${d ? 'rgba(255,50,50,0.3)' : 'rgba(200,0,0,0.2)'};
-      background: transparent;
-      color: ${d ? '#ff6666' : '#cc0000'};
-      font-size: 11px;
-      font-family: ${monoFont};
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-    }
-    .llm-chat-error-retry:hover {
-      background: ${d ? 'rgba(255,50,50,0.08)' : 'rgba(200,0,0,0.04)'};
-    }
-
-    .llm-chat-input-area {
-      padding: 12px 16px 16px;
-      border-top: 1px solid ${borderSubtle};
-    }
-
-    /* Streamdown Animation CSS */
-    @keyframes sd-fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes sd-blurIn {
-      from { opacity: 0; filter: blur(4px); }
-      to { opacity: 1; filter: blur(0); }
-    }
-    @keyframes sd-slideUp {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    [data-sd-animate] {
-      animation: var(--sd-animation, sd-fadeIn) var(--sd-duration, 150ms)
-        var(--sd-easing, ease) both;
-    }
-
-    @keyframes llm-pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
-    }
-  `;
-
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = css;
-  document.head.appendChild(style);
-}
-
-// ============================================================================
-// Internal Components
-// ============================================================================
-
 function isVisionModel(modelId: string): boolean {
   if (!modelId) return false;
   const lower = modelId.toLowerCase();
   return lower.includes('vl') || lower.includes('vision') || lower.includes('moondream');
 }
 
+// ============================================================================
+// Markdown Components Mapped to Tailwind
+// ============================================================================
+
+const markdownComponents = {
+  h1: ({ children }: any) => <h1 className="text-3xl font-bold tracking-tight mt-6 mb-4 text-zinc-900 dark:text-zinc-100">{children}</h1>,
+  h2: ({ children }: any) => <h2 className="text-2xl font-semibold tracking-tight mt-6 mb-4 text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 pb-2">{children}</h2>,
+  h3: ({ children }: any) => <h3 className="text-xl font-semibold tracking-tight mt-6 mb-3 text-zinc-900 dark:text-zinc-100">{children}</h3>,
+  h4: ({ children }: any) => <h4 className="text-lg font-semibold tracking-tight mt-4 mb-2 text-zinc-900 dark:text-zinc-100">{children}</h4>,
+  p: ({ children }: any) => <p className="leading-7 [&:not(:first-child)]:mt-4 text-zinc-800 dark:text-zinc-300">{children}</p>,
+  ul: ({ children }: any) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2 text-zinc-800 dark:text-zinc-300">{children}</ul>,
+  ol: ({ children }: any) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2 text-zinc-800 dark:text-zinc-300">{children}</ol>,
+  li: ({ children }: any) => <li>{children}</li>,
+  blockquote: ({ children }: any) => <blockquote className="mt-4 border-l-2 border-zinc-300 dark:border-zinc-700 pl-4 italic text-zinc-600 dark:text-zinc-400">{children}</blockquote>,
+  a: ({ href, children }: any) => <a href={href} className="font-medium text-blue-600 hover:underline dark:text-blue-400" target="_blank" rel="noopener noreferrer">{children}</a>,
+  table: ({ children }: any) => <div className="my-4 w-full overflow-y-auto"><table className="w-full text-sm">{children}</table></div>,
+  tr: ({ children }: any) => <tr className="m-0 border-t border-zinc-200 dark:border-zinc-800 p-0 even:bg-zinc-50 dark:even:bg-zinc-900/50">{children}</tr>,
+  th: ({ children }: any) => <th className="border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-2 font-semibold text-zinc-900 dark:text-zinc-100 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{children}</th>,
+  td: ({ children }: any) => <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right text-zinc-700 dark:text-zinc-300">{children}</td>,
+  pre: ({ children }: any) => <pre className="mt-4 mb-4 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-4 text-[13px] leading-relaxed font-mono shadow-sm">{children}</pre>,
+  code: ({ children, className }: any) => {
+    // If it's inline code (not wrapped in pre by default it lacks language- classes)
+    const isInline = !className;
+    return (
+      <code className={cn("font-mono text-[13px]", isInline ? "bg-zinc-100 dark:bg-zinc-800/60 rounded-md px-1.5 py-0.5 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-300" : "")}>
+        {children}
+      </code>
+    );
+  }
+};
+
+// ============================================================================
+// Internal Components
+// ============================================================================
+
 function ModelSelector({ 
   currentModel, 
   onSelect,
-  theme
 }: { 
   currentModel: string | null, 
   onSelect: (id: string) => void,
-  theme: 'dark' | 'light'
 }): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -557,7 +130,6 @@ function ModelSelector({
 
   const displayModel = useMemo(() => {
     if (!currentModel) return 'Select Model';
-    // Find friendly name or format ID
     const id = currentModel.split('/').pop() || currentModel;
     let label = id.length > 25 ? id.substring(0, 25) + '...' : id;
     if (isVisionModel(currentModel)) {
@@ -567,36 +139,47 @@ function ModelSelector({
   }, [currentModel]);
 
   return (
-    <div className="llm-chat-model-select" ref={ref}>
+    <div className="relative" ref={ref}>
       <button 
         type="button" 
-        className="llm-chat-model-btn"
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-medium tracking-wide rounded-full transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
-        [{displayModel}] <ChevronDownIcon />
+        <span>{displayModel}</span>
+        <ChevronDown className="w-3.5 h-3.5 opacity-70" />
       </button>
 
       {isOpen && (
-        <div className="llm-chat-model-menu">
-          <div className="llm-chat-model-group">[WebLLM]</div>
+        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 py-2 scrollbar-thin">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">WebLLM</div>
           {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
             <button
               key={key}
-              className={`llm-chat-model-item ${currentModel === value ? 'llm-chat-model-item--active' : ''}`}
+              className={cn(
+                "block w-full text-left px-3 py-2 text-xs font-medium truncate transition-colors",
+                currentModel === value 
+                  ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" 
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key} {isVisionModel(value) ? ' [VISION]' : ''}
+              {key} {isVisionModel(value) && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">VISION</span>}
             </button>
           ))}
           
-          <div className="llm-chat-model-group">[Transformers.js]</div>
+          <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-2 border-t border-zinc-100 dark:border-zinc-800 pt-3">Transformers.js</div>
           {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
             <button
               key={key}
-              className={`llm-chat-model-item ${currentModel === value ? 'llm-chat-model-item--active' : ''}`}
+              className={cn(
+                "block w-full text-left px-3 py-2 text-xs font-medium truncate transition-colors",
+                currentModel === value 
+                  ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" 
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key} {isVisionModel(value) ? ' [VISION]' : ''}
+              {key} {isVisionModel(value) && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">VISION</span>}
             </button>
           ))}
         </div>
@@ -611,7 +194,7 @@ function ModelSelector({
 
 function Chat({
   systemPrompt = DEFAULT_SYSTEM_PROMPT,
-  placeholder = 'Type a message...',
+  placeholder = 'Message...',
   theme = 'dark',
   className,
   maxHeight = '600px',
@@ -621,7 +204,7 @@ function Chat({
   onError: onErrorProp,
   showHeader = true,
   showProgress = true,
-  welcomeMessage = 'Ready to assist',
+  welcomeMessage = 'How can I help you today?',
   onModelChange,
 }: ChatProps): React.JSX.Element {
   const { llm, isLoading, isReady, loadProgress, error, modelId, reload } = useLLM();
@@ -637,17 +220,10 @@ function Chat({
   const abortRef = useRef(false);
   const isProcessingRef = useRef(false);
 
-  // Inject styles
-  useEffect(() => {
-    injectChatStyles(theme);
-  }, [theme]);
-
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingText, isGenerating]);
 
-  // Generate response
   const generate = async (userContent: string, currentMessages: ChatMessageInternal[], attachedImages: ImageAttachment[] = []) => {
     if (!llm || !isReady || isProcessingRef.current) return;
     isProcessingRef.current = true;
@@ -706,7 +282,6 @@ function Chat({
 
     try {
       const response = await llm.stream(
-
         apiMessages,
         (_token: string, fullText: string) => {
           if (abortRef.current) return;
@@ -760,137 +335,126 @@ function Chat({
     }
   };
 
-  // Status
-  const statusDotClass = error
-    ? 'llm-chat-dot llm-chat-dot--error'
-    : isReady
-      ? 'llm-chat-dot llm-chat-dot--ready'
-      : 'llm-chat-dot llm-chat-dot--loading';
-
-  const statusText = error
-    ? 'Error'
-    : isReady
-      ? 'Ready'
-      : isLoading
-        ? 'Loading'
-        : 'Idle';
-
   return (
-    <div className={`llm-chat${className ? ` ${className}` : ''}`} style={{ maxHeight, height: '100%' }}>
+    <div className={cn("flex flex-col bg-white dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm", className)} style={{ maxHeight, height: '100%' }}>
       {/* Header */}
       {showHeader && (
-        <div className="llm-chat-header">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-900/20 backdrop-blur-md">
           {onModelChange ? (
             <ModelSelector 
               currentModel={modelId} 
               onSelect={onModelChange}
-              theme={theme}
             />
           ) : (
-             <div className="llm-chat-model-select">
-               <span style={{
-                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                 fontSize: '11px',
-                 textTransform: 'uppercase' as const,
-                 letterSpacing: '0.05em',
-               }}>
-                 [{modelId?.split('/').pop()}] {modelId && isVisionModel(modelId) ? '[VISION]' : ''}
+             <div className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center gap-2">
+               <span className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-300">
+                 {modelId?.split('/').pop()}
                </span>
+               {modelId && isVisionModel(modelId) && (
+                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">VISION</span>
+               )}
              </div>
           )}
           
-          <div className="llm-chat-status">
-            <span>{statusText}</span>
-            <div className={statusDotClass} />
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 capitalize">
+              {error ? 'Error' : isReady ? 'Ready' : isLoading ? 'Loading' : 'Idle'}
+            </span>
+            <div className={cn(
+              "w-2 h-2 rounded-full",
+              error ? "bg-red-500" : isReady ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-zinc-300 dark:bg-zinc-700 animate-pulse"
+            )} />
           </div>
         </div>
       )}
 
       {/* Progress Bar */}
       {showProgress && isLoading && loadProgress && (
-        <div className="llm-chat-progress">
-          <div className="llm-chat-progress-bar">
+        <div className="px-5 py-3 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate pr-4">{loadProgress.status}</span>
+            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{Math.round(loadProgress.progress)}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className="llm-chat-progress-fill"
+              className="h-full bg-blue-500 dark:bg-blue-600 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${Math.min(100, loadProgress.progress)}%` }}
             />
           </div>
-          <div className="llm-chat-progress-text">{loadProgress.status}</div>
         </div>
       )}
 
       {/* Error Banner */}
       {error && (
-        <div className="llm-chat-error">
-          <span className="llm-chat-error-text">{error.message}</span>
-          <button className="llm-chat-error-retry" onClick={reload}>
-            <RetryIcon /> Retry
+        <div className="flex items-center justify-between mx-5 mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl">
+          <span className="text-sm text-red-700 dark:text-red-400 font-medium">{error.message}</span>
+          <button 
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-black border border-red-200 dark:border-red-900 shadow-sm rounded-lg text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+            onClick={reload}
+          >
+            <RotateCcw className="w-3.5 h-3.5" /> Retry
           </button>
         </div>
       )}
 
       {/* Messages Area */}
-      <div className="llm-chat-messages">
+      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
         {!isLoading && messages.length === 0 && !error && (
-          <div className="llm-chat-welcome">
-            <h3>[{welcomeMessage}]</h3>
-            <p>Markdown, code blocks, Mermaid diagrams. Paste images with Ctrl+V.</p>
+          <div className="flex-1 flex flex-col items-center justify-center text-center opacity-80 mt-12 mb-8 transition-opacity hover:opacity-100">
+            <div className="w-16 h-16 bg-gradient-to-tr from-blue-500 to-cyan-400 rounded-2xl shadow-xl shadow-blue-500/20 mb-6 flex items-center justify-center transform rotate-3">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">{welcomeMessage}</h3>
+            <p className="text-zinc-500 dark:text-zinc-400 max-w-sm">
+              Use Markdown, paste images (Ctrl+V), create Mermaid diagrams, and write math equations safely.
+            </p>
           </div>
         )}
 
         {messages.map((msg, i) => (
-          <div key={i} className={`llm-chat-bubble llm-chat-bubble--${msg.role}`}>
+          <div key={i} className={cn("flex flex-col max-w-[85%]", msg.role === 'user' ? "self-end" : "self-start w-full")}>
             {msg.role === 'user' ? (
-              <>
+              <div className="bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-5 py-3.5 rounded-[24px] rounded-br-[8px] sm:px-6 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
                 {msg.images && msg.images.length > 0 && (
-                  <div className="llm-chat-msg-images">
+                  <div className="flex flex-wrap gap-2 mb-3 mt-1">
                     {msg.images.map(img => (
-                      <img key={img.id} src={img.dataUrl} className="llm-chat-msg-img" alt="attachment" />
+                      <img key={img.id} src={img.dataUrl} className="w-24 h-24 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm" alt="attachment" />
                     ))}
                   </div>
                 )}
-                <div className="llm-chat-user-content" style={{ padding: '0px' }}>
-                  <div className="llm-chat-assistant-content" style={{ padding: '10px 14px' }}>
-                    <Streamdown plugins={{ code, mermaid }}>
-                      {msg.content}
-                    </Streamdown>
-                  </div>
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
+                    {msg.content}
+                  </Streamdown>
                 </div>
-              </>
+              </div>
             ) : (
-              <div className="llm-chat-assistant-content">
-                <Streamdown 
-                  plugins={{ code, mermaid }}
-                  animated={true}
-                  isAnimating={false}
-                >
+              <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
+                <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
                   {msg.content}
                 </Streamdown>
               </div>
             )}
-            
           </div>
         ))}
 
         {streamingText && (
-          <div className="llm-chat-bubble llm-chat-bubble--assistant">
-            <div className="llm-chat-assistant-content">
-                <Streamdown 
-                  plugins={{ code, mermaid }}
-                  animated={true}
-                  isAnimating={isGenerating}
-                >
-                  {streamingText}
-                </Streamdown>
+          <div className="flex flex-col self-start w-full max-w-[85%]">
+            <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
+              <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={isGenerating}>
+                {streamingText}
+              </Streamdown>
             </div>
           </div>
         )}
         
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="h-4" />
       </div>
 
       {/* Input Area */}
-      <div className="llm-chat-input-area">
+      <div className="p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-100 dark:border-zinc-800/80">
         <ChatInput
           value={input}
           onChange={setInput}
@@ -899,7 +463,6 @@ function Chat({
           disabled={!isReady && !isLoading}
           isGenerating={isGenerating}
           placeholder={isLoading ? 'Model is loading...' : placeholder}
-          theme={theme}
           actions={inputActions}
           images={images}
           onImageAdd={img => setImages(prev => [...prev, img])}
