@@ -441,6 +441,12 @@ function injectChatStyles(theme: 'dark' | 'light') {
 // Internal Components
 // ============================================================================
 
+function isVisionModel(modelId: string): boolean {
+  if (!modelId) return false;
+  const lower = modelId.toLowerCase();
+  return lower.includes('vl') || lower.includes('vision') || lower.includes('moondream');
+}
+
 function ModelSelector({ 
   currentModel, 
   onSelect,
@@ -467,7 +473,11 @@ function ModelSelector({
     if (!currentModel) return 'Select Model';
     // Find friendly name or format ID
     const id = currentModel.split('/').pop() || currentModel;
-    return id.length > 25 ? id.substring(0, 25) + '...' : id;
+    let label = id.length > 25 ? id.substring(0, 25) + '...' : id;
+    if (isVisionModel(currentModel)) {
+      label += ' [VISION]';
+    }
+    return label;
   }, [currentModel]);
 
   return (
@@ -489,7 +499,7 @@ function ModelSelector({
               className={`llm-chat-model-item ${currentModel === value ? 'llm-chat-model-item--active' : ''}`}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key}
+              {key} {isVisionModel(value) ? ' [VISION]' : ''}
             </button>
           ))}
           
@@ -500,7 +510,7 @@ function ModelSelector({
               className={`llm-chat-model-item ${currentModel === value ? 'llm-chat-model-item--active' : ''}`}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key}
+              {key} {isVisionModel(value) ? ' [VISION]' : ''}
             </button>
           ))}
         </div>
@@ -698,7 +708,7 @@ function Chat({
                  textTransform: 'uppercase' as const,
                  letterSpacing: '0.05em',
                }}>
-                 [{modelId?.split('/').pop()}]
+                 [{modelId?.split('/').pop()}] {modelId && isVisionModel(modelId) ? '[VISION]' : ''}
                </span>
              </div>
           )}

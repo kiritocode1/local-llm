@@ -86,7 +86,6 @@ export const TRANSFORMERS_MODELS = {
 
   // === Vision Models ===
   'qwen-2.5-vl-3b': 'onnx-community/Qwen2.5-VL-3B-Instruct',
-  'moondream2': 'Xenova/moondream2',
   'phi-3.5-vision': 'onnx-community/Phi-3.5-vision-instruct',
 
 
@@ -95,14 +94,10 @@ export const TRANSFORMERS_MODELS = {
 
   // === SmolLM2 Models (HuggingFace) - Ultra lightweight ===
   'smollm2-135m': 'HuggingFaceTB/SmolLM2-135M-Instruct',
-  'smollm2-360m': 'HuggingFaceTB/SmolLM2-360M-Instruct',
   'smollm2-1.7b': 'HuggingFaceTB/SmolLM2-1.7B-Instruct',
 
   // === Phi Models (Microsoft) ===
   'phi-3-mini': 'Xenova/Phi-3-mini-4k-instruct',
-
-  // === TinyLlama - Very fast and light ===
-  'tinyllama': 'Xenova/TinyLlama-1.1B-Chat-v1.0',
 } as const;
 
 export type WebLLMModelID = keyof typeof WEBLLM_MODELS;

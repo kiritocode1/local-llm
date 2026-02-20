@@ -1,7 +1,8 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.2.9",
-  "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",  "type": "module",
+  "version": "0.3.1",
+  "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
+  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -44,7 +45,8 @@
     "prepublishOnly": "bun run build",
     "demo": "bunx serve . -p 3000",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "deploy": "bun run build && npm publish --access public --ignore-scripts"
   },
   "keywords": [
     "llm",

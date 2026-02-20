@@ -38,12 +38,9 @@ export const TRANSFORMERS_MODEL_SIZES: Record<TransformersModelAlias, string> = 
   'qwen-2.5-vl-3b': '~2.6GB',
   'qwen-3-0.6b': '~400MB',
   'smollm2-135m': '~100MB',
-  'smollm2-360m': '~250MB',
   'smollm2-1.7b': '~1GB',
-  'moondream2': '~1.5GB',
   'phi-3.5-vision': '~5GB',
   'phi-3-mini': '~2.3GB',
-  'tinyllama': '~700MB',
 };
 
 /**
