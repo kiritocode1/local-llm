@@ -5,13 +5,13 @@ import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-inp
 import { WEBLLM_MODELS, TRANSFORMERS_MODELS, type SupportedModel } from '../models';
 import type { ChatMessage } from '../types';
 
-import { RotateCcw, ChevronDown, AlertCircleIcon } from 'lucide-react';
+import { RotateCcw, ChevronDown, AlertCircle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // @ts-ignore
-import { Streamdown } from 'streamdown';
-import type { MermaidErrorComponentProps } from 'streamdown';
+import { Streamdown, parseMarkdownIntoBlocks } from 'streamdown';
+import type { MermaidErrorComponentProps, BlockProps } from 'streamdown';
 // @ts-ignore
 import { code } from '@streamdown/code';
 // @ts-ignore
@@ -27,10 +27,19 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Intercept the default streamdown blocks hook to sanitize malformed languages into supported codes.
+function sanitizeMarkdownLanguageBlocks(markdown: string) {
+  // Regex designed to catch malformed mermaid language keys (like 'mer', 'merma', 'mermai')
+  // and force it to resolve to the full 'mermaid' language flag.
+  let cleanMarkdown = markdown;
+  cleanMarkdown = cleanMarkdown.replace(/```(?:mer|merma|mermai|mmd)\n/gi, '```mermaid\n');
+  return parseMarkdownIntoBlocks(cleanMarkdown);
+}
+
 const CustomMermaidError = ({ error, retry }: MermaidErrorComponentProps) => (
   <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 my-4 font-sans">
     <div className="flex items-center gap-2">
-      <span className="text-xl"><AlertCircleIcon className="text-red-500" /></span>
+      <span className="text-xl"><AlertCircle className="w-5 h-5 text-red-500" /></span>
       <p className="font-semibold text-red-500 text-sm">Failed to render Mermaid diagram</p>
     </div>
     <div className="mt-2 text-red-400/80 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
@@ -465,6 +474,7 @@ function Chat({
                     isAnimating={false}
                     mermaid={mermaidOptions}
                     controls={streamdownControls}
+                    parseMarkdownIntoBlocksFn={sanitizeMarkdownLanguageBlocks}
                   >
                     {msg.content}
                   </Streamdown>
@@ -479,6 +489,7 @@ function Chat({
                   isAnimating={false}
                   mermaid={mermaidOptions}
                   controls={streamdownControls}
+                  parseMarkdownIntoBlocksFn={sanitizeMarkdownLanguageBlocks}
                 >
                   {msg.content}
                 </Streamdown>
@@ -497,6 +508,7 @@ function Chat({
                 isAnimating={isGenerating}
                 mermaid={mermaidOptions}
                 controls={streamdownControls}
+                parseMarkdownIntoBlocksFn={sanitizeMarkdownLanguageBlocks}
               >
                 {streamingText}
               </Streamdown>
