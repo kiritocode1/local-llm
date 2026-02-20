@@ -34,11 +34,15 @@ function sanitizeMarkdownLanguageBlocks(markdown: string) {
   let cleanMarkdown = markdown;
   
   // Replace anything that is an abbreviated mermaid block opener with '```mermaid'
-  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*(?:mer(?:m|ma|mai)?|mmd|graphviz)[ \t]*\n/gi, '```mermaid\n');
+  // using (?:\n|$) so that we catch streaming chunks before the new line is typed.
+  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*(?:mer(?:m|ma|mai)?|mmd|graphviz)[ \t]*(?:\n|$)/gi, '```mermaid\n');
+  
+  // Catch cases where the model is actively streaming '```m' or '```me' at the very tail end of the output stream.
+  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*(?:m|me)[ \t]*$/gi, '```mermaid\n');
   
   // In some instances, the user model hallucinates simply opening a code block, then immediately typing `graph TD` inside without a language tag.
   // We can't automatically assume ANY unmarked code block is mermaid, but if it starts with common Mermaid DSL terms, we force it.
-  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*\n[ \t]*(graph(?: TB| TD| BT| RL| LR)|sequenceDiagram|classDiagram|stateDiagram|pie(?: title)?|flowchart|gantt|journey)/gi, '```mermaid\n$1');
+  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*(?:\n|$)[ \t]*(graph(?: TB| TD| BT| RL| LR)|sequenceDiagram|classDiagram|stateDiagram|pie(?: title)?|flowchart|gantt|journey)/gi, '```mermaid\n$1');
 
   return parseMarkdownIntoBlocks(cleanMarkdown);
 }
@@ -516,6 +520,7 @@ function Chat({
                 mermaid={mermaidOptions}
                 controls={streamdownControls}
                 parseMarkdownIntoBlocksFn={sanitizeMarkdownLanguageBlocks}
+                caret="block"
               >
                 {streamingText}
               </Streamdown>
