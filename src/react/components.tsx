@@ -29,10 +29,11 @@ function cn(...inputs: ClassValue[]) {
 
 // Intercept the default streamdown blocks hook to sanitize malformed languages into supported codes.
 function sanitizeMarkdownLanguageBlocks(markdown: string) {
-  // Regex designed to catch malformed mermaid language keys (like 'mer', 'merma', 'mermai', 'graphviz', or missing 'mermaid' completely before graph statement)
-  // and force it to resolve to the full 'mermaid' language flag explicitly.
   let cleanMarkdown = markdown;
   
+  // Catch streaming cursor artifacts attached to language tags by some model handlers (e.g., '```python_', '```_', '```|', '```python█')
+  cleanMarkdown = cleanMarkdown.replace(/```([a-zA-Z0-9+#-]*)[_|█▋]+[ \t]*(?:\n|$)/gi, '```$1\n');
+
   // Replace anything that is an abbreviated mermaid block opener with '```mermaid'
   // using (?:\n|$) so that we catch streaming chunks before the new line is typed.
   cleanMarkdown = cleanMarkdown.replace(/```[ \t]*(?:mer(?:m|ma|mai)?|mmd|graphviz)[ \t]*(?:\n|$)/gi, '```mermaid\n');
