@@ -137,20 +137,20 @@ function isVisionModel(modelId: string): boolean {
 // ============================================================================
 
 const markdownComponents = {
-  h1: ({ children }: any) => <h1 className="text-3xl font-bold tracking-tight mt-6 mb-4 text-zinc-900 dark:text-zinc-100">{children}</h1>,
-  h2: ({ children }: any) => <h2 className="text-2xl font-semibold tracking-tight mt-6 mb-4 text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 pb-2">{children}</h2>,
-  h3: ({ children }: any) => <h3 className="text-xl font-semibold tracking-tight mt-6 mb-3 text-zinc-900 dark:text-zinc-100">{children}</h3>,
-  h4: ({ children }: any) => <h4 className="text-lg font-semibold tracking-tight mt-4 mb-2 text-zinc-900 dark:text-zinc-100">{children}</h4>,
-  p: ({ children }: any) => <p className="leading-7 [&:not(:first-child)]:mt-4 text-zinc-800 dark:text-zinc-300">{children}</p>,
-  ul: ({ children }: any) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2 text-zinc-800 dark:text-zinc-300">{children}</ul>,
-  ol: ({ children }: any) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2 text-zinc-800 dark:text-zinc-300">{children}</ol>,
+  h1: ({ children }: any) => <h1 className="text-3xl font-bold uppercase tracking-tight mt-8 mb-4 text-black dark:text-white border-b-2 border-black dark:border-white pb-2">{children}</h1>,
+  h2: ({ children }: any) => <h2 className="text-2xl font-bold uppercase tracking-tight mt-8 mb-4 text-black dark:text-white border-b-2 border-black dark:border-white pb-2">{children}</h2>,
+  h3: ({ children }: any) => <h3 className="text-xl font-bold uppercase tracking-tight mt-6 mb-3 text-black dark:text-white">{children}</h3>,
+  h4: ({ children }: any) => <h4 className="text-lg font-bold uppercase tracking-tight mt-4 mb-2 text-black dark:text-white">{children}</h4>,
+  p: ({ children }: any) => <p className="leading-relaxed [&:not(:first-child)]:mt-5 text-black dark:text-white text-base font-mono">{children}</p>,
+  ul: ({ children }: any) => <ul className="my-5 ml-6 list-square [&>li]:mt-2 text-black dark:text-white font-mono">{children}</ul>,
+  ol: ({ children }: any) => <ol className="my-5 ml-6 list-decimal [&>li]:mt-2 text-black dark:text-white font-mono">{children}</ol>,
   li: ({ children }: any) => <li>{children}</li>,
-  blockquote: ({ children }: any) => <blockquote className="mt-4 border-l-2 border-zinc-300 dark:border-zinc-700 pl-4 italic text-zinc-600 dark:text-zinc-400">{children}</blockquote>,
-  a: ({ href, children }: any) => <a href={href} className="font-medium text-blue-600 hover:underline dark:text-blue-400" target="_blank" rel="noopener noreferrer">{children}</a>,
-  table: ({ children }: any) => <div className="my-4 w-full overflow-y-auto"><table className="w-full text-sm">{children}</table></div>,
-  tr: ({ children }: any) => <tr className="m-0 border-t border-zinc-200 dark:border-zinc-800 p-0 even:bg-zinc-50 dark:even:bg-zinc-900/50">{children}</tr>,
-  th: ({ children }: any) => <th className="border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-2 font-semibold text-zinc-900 dark:text-zinc-100 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{children}</th>,
-  td: ({ children }: any) => <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right text-zinc-700 dark:text-zinc-300">{children}</td>,
+  blockquote: ({ children }: any) => <blockquote className="mt-5 border-l-4 border-black dark:border-white pl-4 italic text-black dark:text-white font-mono">{children}</blockquote>,
+  a: ({ href, children }: any) => <a href={href} className="font-bold underline text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors" target="_blank" rel="noopener noreferrer">{children}</a>,
+  table: ({ children }: any) => <div className="my-5 w-full overflow-y-auto border-2 border-black dark:border-white"><table className="w-full text-base font-mono">{children}</table></div>,
+  tr: ({ children }: any) => <tr className="m-0 border-b-2 border-black dark:border-white p-0 even:bg-black/5 dark:even:bg-white/5">{children}</tr>,
+  th: ({ children }: any) => <th className="border-r-2 last:border-r-0 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-4 py-2 font-bold uppercase text-left">{children}</th>,
+  td: ({ children }: any) => <td className="border-r-2 last:border-r-0 border-black dark:border-white px-4 py-2 text-left text-black dark:text-white">{children}</td>,
 };
 
 // ============================================================================
@@ -188,47 +188,47 @@ function ModelSelector({
   }, [currentModel]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative font-mono" ref={ref}>
       <button 
         type="button" 
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-medium tracking-wide rounded-full transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 border-2 border-black dark:border-white bg-transparent text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-xs font-bold uppercase tracking-widest transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayModel}</span>
-        <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+        <ChevronDown className="w-4 h-4" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 py-2 scrollbar-thin">
-          <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">WebLLM</div>
+        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-[#fafafa] dark:bg-black border-2 border-black dark:border-white z-50 p-2 scrollbar-none">
+          <div className="px-3 py-2 text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest border-b-2 border-black/10 dark:border-white/10 mb-1">WebLLM</div>
           {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
-                "block w-full text-left px-3 py-2 text-xs font-medium truncate transition-colors",
+                "block w-full text-left px-3 py-2.5 text-xs font-bold uppercase tracking-wider truncate transition-colors",
                 currentModel === value 
-                  ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" 
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  ? "bg-black text-white dark:bg-white dark:text-black" 
+                  : "text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key} {isVisionModel(value) && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">VISION</span>}
+              {key} {isVisionModel(value) && <span className="ml-2 px-1.5 py-0.5 border border-current text-[9px]">VISION</span>}
             </button>
           ))}
           
-          <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-2 border-t border-zinc-100 dark:border-zinc-800 pt-3">Transformers.js</div>
+          <div className="px-3 py-2 text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest mt-4 border-b-2 border-black/10 dark:border-white/10 mb-1">Transformers.js</div>
           {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
-                "block w-full text-left px-3 py-2 text-xs font-medium truncate transition-colors",
+                "block w-full text-left px-3 py-2.5 text-xs font-bold uppercase tracking-wider truncate transition-colors",
                 currentModel === value 
-                  ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" 
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  ? "bg-black text-white dark:bg-white dark:text-black" 
+                  : "text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key} {isVisionModel(value) && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">VISION</span>}
+              {key} {isVisionModel(value) && <span className="ml-2 px-1.5 py-0.5 border border-current text-[9px]">VISION</span>}
             </button>
           ))}
         </div>
@@ -399,33 +399,33 @@ function Chat({
   };
 
   return (
-    <div className={cn("flex flex-col bg-white dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm", className)} style={{ maxHeight, height: '100%' }}>
+    <div className={cn("flex flex-col bg-[#fafafa] dark:bg-black border-2 border-black dark:border-white font-mono rounded-none overflow-hidden", className)} style={{ maxHeight, height: '100%' }}>
       {/* Header */}
       {showHeader && (
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-900/20 backdrop-blur-md">
+        <div className="flex items-center justify-between px-6 py-5 border-b-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
           {onModelChange ? (
             <ModelSelector 
               currentModel={modelId} 
               onSelect={onModelChange}
             />
           ) : (
-             <div className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center gap-2">
-               <span className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-300">
+             <div className="px-4 py-1.5 border-2 border-black dark:border-white flex items-center gap-3">
+               <span className="text-sm font-bold uppercase tracking-widest text-black dark:text-white">
                  {modelId?.split('/').pop()}
                </span>
                {modelId && isVisionModel(modelId) && (
-                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">VISION</span>
+                 <span className="px-2 py-0.5 border border-black dark:border-white text-[10px] font-bold uppercase tracking-widest text-black dark:text-white bg-transparent">VISION</span>
                )}
              </div>
           )}
           
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 capitalize">
-              {error ? 'Error' : isReady ? 'Ready' : isLoading ? 'Loading' : 'Idle'}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold tracking-widest text-black dark:text-white uppercase">
+              {error ? 'ERR' : isReady ? 'RDY' : isLoading ? 'LOD' : 'IDL'}
             </span>
             <div className={cn(
-              "w-2 h-2 rounded-full",
-              error ? "bg-red-500" : isReady ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-zinc-300 dark:bg-zinc-700 animate-pulse"
+              "w-3 h-3 border border-black dark:border-white rounded-none",
+              error ? "bg-red-500" : isReady ? "bg-black dark:bg-white" : "bg-transparent animate-pulse"
             )} />
           </div>
         </div>
@@ -433,14 +433,14 @@ function Chat({
 
       {/* Progress Bar */}
       {showProgress && isLoading && loadProgress && (
-        <div className="px-5 py-3 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate pr-4">{loadProgress.status}</span>
-            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{Math.round(loadProgress.progress)}%</span>
+        <div className="px-6 py-4 border-b-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
+          <div className="flex justify-between items-center mb-2 font-mono uppercase tracking-widest text-xs">
+            <span className="text-black dark:text-white font-bold truncate pr-4">{loadProgress.status}</span>
+            <span className="font-bold text-black dark:text-white">{Math.round(loadProgress.progress)}%</span>
           </div>
-          <div className="h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="h-4 w-full border-2 border-black dark:border-white bg-transparent rounded-none overflow-hidden relative">
             <div
-              className="h-full bg-blue-500 dark:bg-blue-600 rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-black dark:bg-white transition-all duration-300 ease-out"
               style={{ width: `${Math.min(100, loadProgress.progress)}%` }}
             />
           </div>
@@ -449,45 +449,43 @@ function Chat({
 
       {/* Error Banner */}
       {error && (
-        <div className="flex items-center justify-between mx-5 mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl">
-          <span className="text-sm text-red-700 dark:text-red-400 font-medium">{error.message}</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mx-6 mt-6 p-4 border-2 border-red-500 bg-red-50 dark:bg-red-950/20 rounded-none gap-4">
+          <span className="text-sm text-red-600 dark:text-red-400 font-bold uppercase tracking-wider">{error.message}</span>
           <button 
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-black border border-red-200 dark:border-red-900 shadow-sm rounded-lg text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white border-2 border-red-500 hover:bg-transparent hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-none text-xs font-bold uppercase tracking-widest"
             onClick={reload}
           >
-            <RotateCcw className="w-3.5 h-3.5" /> Retry
+            <RotateCcw className="w-4 h-4" /> REBOOT
           </button>
         </div>
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
+      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 scrollbar-thin scrollbar-thumb-black dark:scrollbar-thumb-white scrollbar-track-transparent">
         {!isLoading && messages.length === 0 && !error && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center opacity-80 mt-12 mb-8 transition-opacity hover:opacity-100">
-            <div className="w-16 h-16 bg-gradient-to-tr from-blue-500 to-cyan-400 rounded-2xl shadow-xl shadow-blue-500/20 mb-6 flex items-center justify-center transform rotate-3">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
+          <div className="flex-1 flex flex-col items-center justify-center text-center mt-12 mb-8 p-8 border-2 border-black dark:border-white">
+            <div className="w-20 h-20 border-4 border-black dark:border-white mb-6 flex items-center justify-center text-3xl font-black bg-black text-white dark:bg-white dark:text-black">
+              //
             </div>
-            <h3 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">{welcomeMessage}</h3>
-            <p className="text-zinc-500 dark:text-zinc-400 max-w-sm">
-              Use Markdown, paste images (Ctrl+V), create Mermaid diagrams, and write math equations safely.
+            <h3 className="text-3xl font-black uppercase tracking-widest text-black dark:text-white mb-4">SYSTEM READY</h3>
+            <p className="text-black/70 dark:text-white/70 max-w-sm uppercase text-sm leading-relaxed tracking-wider font-bold">
+              [ MARKDOWN | MATH | MERMAID ] INITIALIZED. AWAITING INPUT.
             </p>
           </div>
         )}
 
         {messages.map((msg, i) => (
-          <div key={i} className={cn("flex flex-col max-w-[85%]", msg.role === 'user' ? "self-end" : "self-start w-full")}>
+          <div key={i} className={cn("flex flex-col max-w-[90%]", msg.role === 'user' ? "self-end" : "self-start w-full")}>
             {msg.role === 'user' ? (
-              <div className="bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-5 py-3.5 rounded-[24px] rounded-br-[8px] sm:px-6 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
+              <div className="bg-black text-[#fafafa] dark:bg-white dark:text-black px-6 py-5 border-2 border-black dark:border-white rounded-none">
                 {msg.images && msg.images.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3 mt-1">
+                  <div className="flex flex-wrap gap-3 mb-4">
                     {msg.images.map(img => (
-                      <img key={img.id} src={img.dataUrl} className="w-24 h-24 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm" alt="attachment" />
+                      <img key={img.id} src={img.dataUrl} className="w-32 h-32 object-cover border-2 border-current shadow-none" alt="attachment" />
                     ))}
                   </div>
                 )}
-                <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="prose prose-base dark:prose-invert max-w-none font-mono">
                   <Streamdown 
                     plugins={{ code, mermaid, math }} 
                     components={markdownComponents} 
@@ -502,7 +500,7 @@ function Chat({
                 </div>
               </div>
             ) : (
-              <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
+              <div className="prose prose-base dark:prose-invert max-w-none p-6 w-full min-w-0 font-mono border-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
                 <Streamdown 
                   plugins={{ code, mermaid, math }} 
                   components={markdownComponents} 
@@ -520,8 +518,8 @@ function Chat({
         ))}
 
         {streamingText && (
-          <div className="flex flex-col self-start w-full max-w-[85%]">
-            <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
+          <div className="flex flex-col self-start w-full max-w-[90%]">
+            <div className="prose prose-base dark:prose-invert max-w-none p-6 w-full min-w-0 font-mono border-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
               <Streamdown 
                 plugins={{ code, mermaid, math }} 
                 components={markdownComponents} 
@@ -542,7 +540,7 @@ function Chat({
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-100 dark:border-zinc-800/80">
+      <div className="p-6 bg-[#fafafa] dark:bg-black border-t-2 border-black dark:border-white">
         <ChatInput
           value={input}
           onChange={setInput}
