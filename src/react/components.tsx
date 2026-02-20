@@ -13,11 +13,11 @@ import { twMerge } from 'tailwind-merge';
 // @ts-ignore
 import { Streamdown } from 'streamdown';
 // @ts-ignore
-import { code } from '@streamdown/code';
+import { createCodePlugin } from '@streamdown/code';
 // @ts-ignore
-import { mermaid } from '@streamdown/mermaid';
+import { createMermaidPlugin } from '@streamdown/mermaid';
 // @ts-ignore
-import { math } from '@streamdown/math';
+import { createMathPlugin } from '@streamdown/math';
 
 import 'katex/dist/katex.min.css';
 import 'streamdown/styles.css';
@@ -26,6 +26,23 @@ import '../tailwind.css';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+const codePlugin = createCodePlugin({
+  themes: ['github-light', 'github-dark'],
+});
+
+const mermaidPlugin = createMermaidPlugin({
+  config: {
+    theme: 'base',
+    themeVariables: {
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    },
+  },
+});
+
+const mathPlugin = createMathPlugin({
+  singleDollarTextMath: false,
+});
 
 // ============================================================================
 // Types
@@ -93,16 +110,6 @@ const markdownComponents = {
   tr: ({ children }: any) => <tr className="m-0 border-t border-zinc-200 dark:border-zinc-800 p-0 even:bg-zinc-50 dark:even:bg-zinc-900/50">{children}</tr>,
   th: ({ children }: any) => <th className="border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-2 font-semibold text-zinc-900 dark:text-zinc-100 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{children}</th>,
   td: ({ children }: any) => <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right text-zinc-700 dark:text-zinc-300">{children}</td>,
-  pre: ({ children }: any) => <pre className="mt-4 mb-4 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-4 text-[13px] leading-relaxed font-mono shadow-sm">{children}</pre>,
-  code: ({ children, className }: any) => {
-    // If it's inline code (not wrapped in pre by default it lacks language- classes)
-    const isInline = !className;
-    return (
-      <code className={cn("font-mono text-[13px]", isInline ? "bg-zinc-100 dark:bg-zinc-800/60 rounded-md px-1.5 py-0.5 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-300" : "")}>
-        {children}
-      </code>
-    );
-  }
 };
 
 // ============================================================================
@@ -426,14 +433,14 @@ function Chat({
                   </div>
                 )}
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
+                  <Streamdown plugins={{ code: codePlugin, mermaid: mermaidPlugin, math: mathPlugin }} components={markdownComponents} animated={true} isAnimating={false}>
                     {msg.content}
                   </Streamdown>
                 </div>
               </div>
             ) : (
               <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
-                <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
+                <Streamdown plugins={{ code: codePlugin, mermaid: mermaidPlugin, math: mathPlugin }} components={markdownComponents} animated={true} isAnimating={false}>
                   {msg.content}
                 </Streamdown>
               </div>
@@ -444,7 +451,7 @@ function Chat({
         {streamingText && (
           <div className="flex flex-col self-start w-full max-w-[85%]">
             <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
-              <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={isGenerating}>
+              <Streamdown plugins={{ code: codePlugin, mermaid: mermaidPlugin, math: mathPlugin }} components={markdownComponents} animated={true} isAnimating={isGenerating}>
                 {streamingText}
               </Streamdown>
             </div>
