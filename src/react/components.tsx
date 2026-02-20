@@ -300,7 +300,12 @@ function Chat({
     const apiMessages: ChatMessage[] = [];
     
     if (systemPrompt) {
-      apiMessages.push({ role: 'system', content: systemPrompt });
+      // Append user-defined system prompt to the baseline safety rules 
+      // ensuring mermaid schema rules aren't lost when consumers overwrite `systemPrompt` prop
+      const finalSystemPrompt = systemPrompt !== DEFAULT_SYSTEM_PROMPT 
+        ? `${DEFAULT_SYSTEM_PROMPT}\n\nAdditional instructions:\n${systemPrompt}`
+        : systemPrompt;
+      apiMessages.push({ role: 'system', content: finalSystemPrompt });
     }
 
     currentMessages.forEach(m => {
