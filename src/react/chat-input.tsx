@@ -139,15 +139,14 @@ export function ChatInput({
 
   return (
     <div 
-      className={`relative flex flex-col bg-black border border-white/30 rounded-none focus-within:border-white/60 transition-colors p-3 font-mono ${className}`}
+      className={`relative flex flex-col bg-transparent rounded-none transition-colors p-0 font-mono ${className}`}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
       {isDragging && (
-        <div className="absolute inset-x-0 inset-y-0 bg-black/90 flex flex-col items-center justify-center z-20 border border-dashed border-white/50 rounded-none m-1">
-          <ImagePlus className="w-8 h-8 text-white mb-2" />
-          <span className="text-white font-light tracking-widest uppercase text-xs">Drop file to attach</span>
+        <div className="absolute inset-x-0 inset-y-0 bg-current/90 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
+          <span className="text-black dark:text-white font-light tracking-[0.2em] uppercase text-xs">DROP FILE TO ATTACH</span>
         </div>
       )}
 
@@ -161,16 +160,16 @@ export function ChatInput({
       />
 
       {images.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 mb-6">
           {images.map((img) => (
-            <div key={img.id} className="relative w-16 h-16 overflow-hidden border border-white/30 rounded-none group select-none">
+            <div key={img.id} className="relative w-16 h-16 overflow-hidden border border-current/20 rounded-none group select-none">
               <img src={img.dataUrl} alt="attachment" className="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0" />
               <button 
                 type="button"
-                className="absolute top-0 right-0 w-5 h-5 bg-black/80 text-white border-l border-b border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-0 right-0 w-5 h-5 bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]"
                 onClick={() => onImageRemove?.(img.id)}
               >
-                <X className="w-3 h-3" />
+                [X]
               </button>
             </div>
           ))}
@@ -186,50 +185,50 @@ export function ChatInput({
         placeholder={placeholder}
         disabled={disabled && !isGenerating}
         rows={1}
-        className="w-full min-h-[24px] max-h-[200px] resize-none border-none outline-none bg-transparent text-white text-sm font-light font-mono leading-relaxed p-0 m-0 placeholder:text-white/30 placeholder:uppercase placeholder:tracking-widest scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+        className="w-full min-h-[24px] max-h-[200px] resize-none border-none outline-none bg-transparent text-current text-[13px] font-light font-mono leading-relaxed p-0 m-0 placeholder:text-current placeholder:opacity-30 placeholder:uppercase placeholder:tracking-[0.2em] scrollbar-none"
       />
 
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mt-6">
+        <div className="flex items-center gap-4">
           {modelSelector && (
-            <div className="mr-2">
+            <div>
               {modelSelector}
             </div>
           )}
           
           <button 
             type="button" 
-            className="flex items-center justify-center w-8 h-8 rounded-none text-white/50 hover:text-white transition-colors"
+            className="text-[11px] uppercase tracking-[0.2em] text-current opacity-50 hover:opacity-100 transition-opacity font-light"
             onClick={() => fileInputRef.current?.click()}
             title="Attach image or PDF (Ctrl+V to paste)"
           >
-            <ImagePlus className="w-4 h-4" />
+            [ FILE ]
           </button>
           
           {actions}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {isGenerating ? (
             <button
               type="button"
-              className="flex items-center justify-center h-8 px-4 rounded-none border border-red-500/50 bg-red-500/10 text-red-500 hover:bg-red-500/20 font-light text-[10px] uppercase tracking-widest transition-colors gap-2 cursor-pointer"
+              className="text-red-500 hover:opacity-70 font-light text-[11px] uppercase tracking-[0.2em] transition-opacity cursor-pointer"
               onClick={onStop}
             >
-              <Square className="w-3 h-3 fill-current" /> STOP
+              [ STOP ]
             </button>
           ) : (
             <button
               type="button"
-              className={`flex items-center justify-center h-8 px-4 rounded-none border text-[10px] font-light uppercase tracking-widest transition-colors gap-2 ${
+              className={`text-[11px] font-light uppercase tracking-[0.2em] transition-opacity ${
                 canSend 
-                  ? 'border-white/30 bg-transparent text-white hover:bg-white hover:text-black cursor-pointer' 
-                  : 'border-white/10 bg-transparent text-white/20 cursor-not-allowed'
+                  ? 'text-current opacity-100 hover:opacity-70 cursor-pointer' 
+                  : 'text-current opacity-20 cursor-not-allowed'
               }`}
               onClick={onSend}
               disabled={!canSend}
             >
-              SEND
+              [ SEND ]
             </button>
           )}
         </div>

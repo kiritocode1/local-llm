@@ -191,44 +191,43 @@ function ModelSelector({
     <div className="relative font-mono" ref={ref}>
       <button 
         type="button" 
-        className="flex items-center gap-2 px-3 py-1.5 border border-white/30 bg-transparent text-white hover:bg-white hover:text-black text-xs font-light uppercase tracking-widest transition-colors"
+        className="flex items-center gap-2 px-0 py-1.5 bg-transparent text-current hover:opacity-70 text-[11px] font-light uppercase tracking-widest transition-opacity"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span>{displayModel}</span>
-        <ChevronDown className="w-4 h-4" />
+        <span>[ {displayModel} ]</span>
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-black border border-white/30 z-50 p-2 scrollbar-none">
-          <div className="px-3 py-2 text-[10px] font-light text-white/50 uppercase tracking-widest border-b border-white/10 mb-1">WebLLM</div>
+        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-black dark:bg-white border border-white/20 dark:border-black/20 z-50 p-2 scrollbar-none">
+          <div className="px-3 py-2 text-[10px] font-light text-current opacity-50 uppercase tracking-widest border-b border-white/10 dark:border-black/10 mb-1">WebLLM</div>
           {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
-                "block w-full text-left px-3 py-2.5 text-xs font-light uppercase tracking-wider truncate transition-colors",
+                "block w-full text-left px-3 py-2.5 text-[11px] font-light uppercase tracking-widest truncate transition-colors text-current",
                 currentModel === value 
-                  ? "bg-white text-black" 
-                  : "text-white hover:bg-white/10"
+                  ? "bg-white text-black dark:bg-black dark:text-white" 
+                  : "hover:bg-white/10 dark:hover:bg-black/10"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key} {isVisionModel(value) && <span className="ml-2 px-1.5 py-0.5 border border-current text-[9px]">VISION</span>}
+              {key} {isVisionModel(value) && <span className="ml-2 text-[9px] opacity-50">[VISION]</span>}
             </button>
           ))}
           
-          <div className="px-3 py-2 text-[10px] font-light text-white/50 uppercase tracking-widest mt-4 border-b border-white/10 mb-1">Transformers.js</div>
+          <div className="px-3 py-2 text-[10px] font-light opacity-50 uppercase tracking-widest mt-4 border-b border-white/10 dark:border-black/10 mb-1">Transformers.js</div>
           {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
-                "block w-full text-left px-3 py-2.5 text-xs font-light uppercase tracking-wider truncate transition-colors",
+                "block w-full text-left px-3 py-2.5 text-[11px] font-light uppercase tracking-widest truncate transition-colors text-current",
                 currentModel === value 
-                  ? "bg-white text-black" 
-                  : "text-white hover:bg-white/10"
+                  ? "bg-white text-black dark:bg-black dark:text-white" 
+                  : "hover:bg-white/10 dark:hover:bg-black/10"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
-              {key} {isVisionModel(value) && <span className="ml-2 px-1.5 py-0.5 border border-current text-[9px]">VISION</span>}
+              {key} {isVisionModel(value) && <span className="ml-2 text-[9px] opacity-50">[VISION]</span>}
             </button>
           ))}
         </div>
@@ -398,49 +397,65 @@ function Chat({
     }
   };
 
+  const [localTheme, setLocalTheme] = useState<'dark' | 'light'>(theme || 'dark');
+
+  // Sync prop theme to local theme but allow independent overrides via toggle
+  useEffect(() => {
+    if (theme) setLocalTheme(theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setLocalTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   return (
-    <div className={cn("flex flex-col bg-black text-white font-mono rounded-none overflow-hidden", className)} style={{ maxHeight, height: '100%' }}>
+    <div className={cn(
+      "flex flex-col font-mono rounded-none overflow-hidden transition-colors duration-300",
+      localTheme === 'dark' ? "bg-black text-[#fafafa] dark" : "bg-[#fafafa] text-black",
+      className
+    )} style={{ maxHeight, height: '100%' }}>
       {/* Header */}
       {showHeader && (
-        <div className="flex items-center justify-between px-6 py-4 bg-black border-b border-white/30">
-          {onModelChange ? (
-            <ModelSelector 
-              currentModel={modelId} 
-              onSelect={onModelChange}
-            />
-          ) : (
-             <div className="px-3 py-1.5 border border-white/30 flex items-center gap-3">
-               <span className="text-xs font-light uppercase tracking-widest text-white">
-                 {modelId?.split('/').pop()}
-               </span>
-               {modelId && isVisionModel(modelId) && (
-                 <span className="px-1.5 py-0.5 border border-white/30 text-[9px] font-light uppercase tracking-widest text-white bg-transparent">VISION</span>
-               )}
-             </div>
-          )}
-          
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-light tracking-widest text-white uppercase opacity-70">
+        <div className="flex items-center justify-between px-6 py-6 bg-transparent border-b border-current/10">
+          <div className="flex items-center gap-6">
+            <span className="text-[11px] font-light tracking-[0.2em] uppercase opacity-70">
               {error ? 'ERR' : isReady ? 'RDY' : isLoading ? 'LOD' : 'IDL'}
             </span>
-            <div className={cn(
-              "w-2 h-2 rounded-none",
-              error ? "bg-red-500" : isReady ? "bg-white" : "bg-white/30 animate-pulse"
-            )} />
+            {onModelChange ? (
+              <ModelSelector 
+                currentModel={modelId} 
+                onSelect={onModelChange}
+              />
+            ) : (
+               <div className="flex items-center gap-2">
+                 <span className="text-[11px] font-light uppercase tracking-[0.2em]">
+                   [ {modelId?.split('/').pop()} ]
+                 </span>
+               </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-6">
+             <button 
+               onClick={toggleTheme}
+               className="text-[11px] tracking-[0.2em] uppercase font-light opacity-50 hover:opacity-100 transition-opacity"
+             >
+               [ {localTheme === 'dark' ? 'LIGHT' : 'DARK'} ]
+             </button>
           </div>
         </div>
       )}
 
       {/* Progress Bar */}
       {showProgress && isLoading && loadProgress && (
-        <div className="px-6 py-4 border-b border-white/30 bg-black">
-          <div className="flex justify-between items-center mb-2 font-mono uppercase tracking-widest text-[10px]">
-            <span className="text-white/70 font-light truncate pr-4">{loadProgress.status}</span>
-            <span className="font-light text-white/70">{Math.round(loadProgress.progress)}%</span>
+        <div className="px-6 py-4 border-b border-current/10 bg-transparent">
+          <div className="flex justify-between items-center mb-2 font-mono uppercase tracking-[0.2em] text-[10px]">
+            <span className="opacity-50 font-light truncate pr-4">{loadProgress.status}</span>
+            <span className="font-light opacity-50">{Math.round(loadProgress.progress)}%</span>
           </div>
-          <div className="h-1 w-full bg-white/10 rounded-none overflow-hidden relative">
+          <div className="h-[1px] w-full bg-current/10 rounded-none overflow-hidden relative">
             <div
-              className="h-full bg-white transition-all duration-300 ease-out"
+              className="h-full bg-current transition-all duration-300 ease-out"
               style={{ width: `${Math.min(100, loadProgress.progress)}%` }}
             />
           </div>
@@ -449,27 +464,21 @@ function Chat({
 
       {/* Error Banner */}
       {error && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mx-6 mt-6 p-4 border border-red-500/50 bg-red-500/10 rounded-none gap-4">
-          <span className="text-[10px] text-red-500 font-light uppercase tracking-wider">{error.message}</span>
-          <button 
-            className="flex items-center gap-2 px-3 py-1.5 bg-transparent text-red-500 border border-red-500/50 hover:bg-red-500/20 transition-colors rounded-none text-[10px] font-light uppercase tracking-widest"
-            onClick={reload}
-          >
-            <RotateCcw className="w-3 h-3" /> REBOOT
+        <div className="mx-6 mt-6 p-4 border border-red-500/30 text-red-500 bg-transparent flex justify-between items-center text-[10px] tracking-[0.2em] uppercase">
+          <span className="font-light">{error.message}</span>
+          <button onClick={reload} className="hover:opacity-70 transition-opacity">
+            [ REBOOT ]
           </button>
         </div>
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-12 scrollbar-none">
         {!isLoading && messages.length === 0 && !error && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center mt-12 mb-8 p-8 border border-white/10">
-            <div className="w-16 h-16 border border-white/30 mb-6 flex items-center justify-center text-xl font-light bg-transparent text-white/50">
-              //
-            </div>
-            <h3 className="text-xl font-light uppercase tracking-widest text-white/70 mb-4">SYSTEM READY</h3>
-            <p className="text-white/40 max-w-sm uppercase text-[10px] leading-relaxed tracking-widest font-light">
-              [ MARKDOWN | MATH | MERMAID ] INITIALIZED. AWAITING INPUT.
+           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+            <h3 className="text-sm font-light uppercase tracking-[0.3em] opacity-50 mb-4">SYSTEM READY</h3>
+            <p className="opacity-30 max-w-sm uppercase text-[10px] leading-relaxed tracking-[0.2em] font-light">
+              MARKDOWN INTERPRETER ACTIVE. AWAITING INPUT.
             </p>
           </div>
         )}
@@ -477,16 +486,16 @@ function Chat({
         {messages.map((msg, i) => (
           <div key={i} className="flex flex-col w-full">
             {msg.role === 'user' ? (
-              <div className="bg-transparent text-white/50 px-4 py-4 border border-white/10 rounded-none w-full">
-                <div className="mb-2 text-[10px] tracking-widest uppercase opacity-50">USER</div>
+              <div className="bg-transparent text-current py-2 w-full">
+                <div className="mb-4 text-[10px] tracking-[0.2em] uppercase opacity-30">USER</div>
                 {msg.images && msg.images.length > 0 && (
                   <div className="flex flex-wrap gap-3 mb-4">
                     {msg.images.map(img => (
-                      <img key={img.id} src={img.dataUrl} className="w-24 h-24 object-cover border border-white/30" alt="attachment" />
+                      <img key={img.id} src={img.dataUrl} className="w-24 h-24 object-cover border border-current/20 grayscale" alt="attachment" />
                     ))}
                   </div>
                 )}
-                <div className="prose prose-base dark:prose-invert max-w-none font-mono">
+                <div className="prose prose-base dark:prose-invert max-w-none font-mono !text-current">
                   <Streamdown 
                     plugins={{ code, mermaid, math }} 
                     components={markdownComponents} 
@@ -501,8 +510,8 @@ function Chat({
                 </div>
               </div>
             ) : (
-              <div className="prose prose-base dark:prose-invert max-w-none px-4 py-4 w-full min-w-0 font-mono border border-white/10 bg-transparent mt-1">
-                <div className="mb-2 text-[10px] tracking-widest uppercase opacity-50 text-white">SYSTEM</div>
+              <div className="prose prose-base dark:prose-invert max-w-none py-2 w-full min-w-0 font-mono bg-transparent mt-2 !text-current">
+                <div className="mb-4 text-[10px] tracking-[0.2em] uppercase opacity-30 text-current">SYSTEM</div>
                 <Streamdown 
                   plugins={{ code, mermaid, math }} 
                   components={markdownComponents} 
@@ -520,9 +529,9 @@ function Chat({
         ))}
 
         {streamingText && (
-          <div className="flex flex-col w-full mt-1">
-            <div className="prose prose-base dark:prose-invert max-w-none px-4 py-4 w-full min-w-0 font-mono border border-white/10 bg-transparent">
-              <div className="mb-2 text-[10px] tracking-widest uppercase opacity-50 text-white">SYSTEM</div>
+          <div className="flex flex-col w-full mt-2">
+            <div className="prose prose-base dark:prose-invert max-w-none py-2 w-full min-w-0 font-mono bg-transparent !text-current">
+              <div className="mb-4 text-[10px] tracking-[0.2em] uppercase opacity-30 text-current animate-pulse">SYSTEM GENERATING</div>
               <Streamdown 
                 plugins={{ code, mermaid, math }} 
                 components={markdownComponents} 
@@ -543,7 +552,7 @@ function Chat({
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-black border-t border-white/30">
+      <div className="p-6 bg-transparent">
         <ChatInput
           value={input}
           onChange={setInput}
