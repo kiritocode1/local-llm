@@ -20,7 +20,7 @@
 
 import * as React from 'react';
 import { useRef, useEffect, useState, useMemo } from 'react';
-import { useLLM, type UseChatOptions, LLMProvider, type LLMProviderProps } from './index';
+import { useLLM, type UseChatOptions, LLMProvider, type LLMProviderProps } from './core';
 import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-input';
 import { WEBLLM_MODELS, TRANSFORMERS_MODELS, type SupportedModel } from '../models';
 import type { ChatMessage } from '../types';
@@ -455,7 +455,7 @@ function ModelSelector({
   currentModel: string | null, 
   onSelect: (id: string) => void,
   theme: 'dark' | 'light'
-}) {
+}): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -537,7 +537,7 @@ function Chat({
   showProgress = true,
   welcomeMessage = 'Ready to assist',
   onModelChange,
-}: ChatProps) {
+}: ChatProps): React.JSX.Element {
   const { llm, isLoading, isReady, loadProgress, error, modelId, reload } = useLLM();
 
   const [messages, setMessages] = useState<ChatMessageInternal[]>([]);
@@ -590,12 +590,12 @@ function Chat({
           content = [
             { type: 'text', text: m.content },
             ...m.images.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
-          ];
+          ] as any[];
         } else {
           content = [
             ...m.images.map(img => ({ type: 'image', image: img.dataUrl })),
             { type: 'text', text: m.content }
-          ];
+          ] as any[];
         }
       }
       apiMessages.push({ role: m.role as ChatMessage['role'], content });
@@ -607,12 +607,12 @@ function Chat({
         finalUserContent = [
           { type: 'text', text: userContent },
           ...attachedImages.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
-        ];
+        ] as any[];
       } else {
         finalUserContent = [
           ...attachedImages.map(img => ({ type: 'image', image: img.dataUrl })),
           { type: 'text', text: userContent }
-        ];
+        ] as any[];
       }
     }
 
@@ -824,7 +824,7 @@ function ChatApp({
   autoLoad = true,
   onModelChange,
   ...chatProps
-}: ChatAppProps) {
+}: ChatAppProps): React.JSX.Element {
   const [model, setModel] = useState(defaultModel);
 
   const handleModelChange = (newModel: string) => {

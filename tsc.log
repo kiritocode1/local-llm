@@ -1,0 +1,1 @@
+src/backends/webllm.ts(160,31): error TS2504: Type 'ChatCompletion' must have a '[Symbol.asyncIterator]()' method that returns an async iterator.

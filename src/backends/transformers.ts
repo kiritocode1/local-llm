@@ -153,7 +153,7 @@ export class TransformersProvider implements LLMProvider {
       throw new Error('Model not loaded. Call load() first.');
     }
 
-    const result = await this.pipeline(messages, {
+    const result = await this.pipeline(messages as any, {
       max_new_tokens: options?.maxTokens ?? 512,
       temperature: options?.temperature ?? 0.7,
       top_p: options?.topP ?? 0.95,
@@ -189,7 +189,7 @@ export class TransformersProvider implements LLMProvider {
       },
     });
 
-    await this.pipeline(messages, {
+    await this.pipeline(messages as any, {
       max_new_tokens: options?.maxTokens ?? 512,
       temperature: options?.temperature ?? 0.7,
       top_p: options?.topP ?? 0.95,

@@ -116,16 +116,18 @@ export class WebLLMProvider implements LLMProvider {
       throw new Error('Model not loaded. Call load() first.');
     }
 
-    const response = await this.engine.chat.completions.create({
+    const request: any = {
       messages: messages.map((m) => ({
-        role: m.role as any,
-        content: m.content as any,
+        role: m.role,
+        content: m.content,
       })),
       temperature: options?.temperature ?? 0.7,
       max_tokens: options?.maxTokens ?? 512,
       top_p: options?.topP ?? 0.95,
       stop: options?.stopSequences,
-    });
+    };
+
+    const response = await this.engine.chat.completions.create(request);
 
     return response.choices[0]?.message?.content ?? '';
   }
@@ -139,17 +141,19 @@ export class WebLLMProvider implements LLMProvider {
       throw new Error('Model not loaded. Call load() first.');
     }
 
-    const chunks = await this.engine.chat.completions.create({
+    const request: any = {
       messages: messages.map((m) => ({
-        role: m.role as any,
-        content: m.content as any,
+        role: m.role,
+        content: m.content,
       })),
       temperature: options?.temperature ?? 0.7,
       max_tokens: options?.maxTokens ?? 512,
       top_p: options?.topP ?? 0.95,
       stop: options?.stopSequences,
       stream: true,
-    });
+    };
+
+    const chunks = await this.engine.chat.completions.create(request) as unknown as AsyncIterable<any>;
 
     let fullText = '';
 

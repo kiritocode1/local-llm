@@ -350,7 +350,7 @@ function ChatInput({
   onImageAdd,
   onImageRemove,
   modelSelector,
-}: ChatInputProps) {
+}: ChatInputProps): React.JSX.Element {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);

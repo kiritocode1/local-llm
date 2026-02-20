@@ -59,8 +59,8 @@ import type {
 } from './types';
 
 import { detectCapabilities } from './detect';
-import { WebLLMProvider, DEFAULT_WEBLLM_MODEL } from './backends/webllm';
-import { TransformersProvider, DEFAULT_TRANSFORMERS_MODEL } from './backends/transformers';
+import { WebLLMProvider, DEFAULT_WEBLLM_MODEL, WEBLLM_MODELS } from './backends/webllm';
+import { TransformersProvider, DEFAULT_TRANSFORMERS_MODEL, TRANSFORMERS_MODELS } from './backends/transformers';
 import { attachToElements } from './helpers';
 
 /**
@@ -168,14 +168,25 @@ export async function createLLM(config: LLMConfig = {}): Promise<LocalLLM> {
   // Detect capabilities
   const capabilities = await detectCapabilities();
 
-  // Determine which backend to use
+  // Determine which backend to use based on requested and model capability
   let useBackend: 'webllm' | 'transformers';
 
+  const explicitModel = config.model;
+  const isWebLLMValue = explicitModel && (Object.values(WEBLLM_MODELS).includes(explicitModel as any) || Object.keys(WEBLLM_MODELS).includes(explicitModel as any));
+  const isTransformersValue = explicitModel && (Object.values(TRANSFORMERS_MODELS).includes(explicitModel as any) || Object.keys(TRANSFORMERS_MODELS).includes(explicitModel as any));
+
   if (requestedBackend === 'auto') {
-    useBackend = capabilities.webgpu ? 'webllm' : 'transformers';
+    if (explicitModel && isTransformersValue && !isWebLLMValue) {
+      useBackend = 'transformers';
+    } else {
+      useBackend = capabilities.webgpu ? 'webllm' : 'transformers';
+    }
   } else if (requestedBackend === 'webllm') {
     if (!capabilities.webgpu) {
       console.warn('[LocalLLM] WebLLM requested but WebGPU not available. Falling back to Transformers.js');
+      useBackend = 'transformers';
+    } else if (explicitModel && isTransformersValue && !isWebLLMValue) {
+      console.warn('[LocalLLM] Model specified is only compatible with Transformers.js. Falling back from explicit WebLLM.');
       useBackend = 'transformers';
     } else {
       useBackend = 'webllm';
