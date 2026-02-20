@@ -539,8 +539,12 @@ function useChat(options: UseChatOptions = {}): UseChatReturn {
 
     setMessages(previousMessages);
 
-    // Re-send
-    return send(lastUserMessage.content);
+    // Re-send (if complex multimodal, we stringify roughly or extract text)
+    const textContent = Array.isArray(lastUserMessage.content) 
+       ? lastUserMessage.content.map(c => c.text || '').join('')
+       : lastUserMessage.content;
+       
+    return send(textContent);
   }, [messages, send]);
 
   return {

@@ -1,8 +1,7 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.2.7",
-  "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
-  "type": "module",
+  "version": "0.2.9",
+  "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,8 +21,12 @@
   },
   "typesVersions": {
     "*": {
-      ".": ["./dist/index.d.ts"],
-      "react": ["./dist/react/index.d.ts"]
+      ".": [
+        "./dist/index.d.ts"
+      ],
+      "react": [
+        "./dist/react/index.d.ts"
+      ]
     }
   },
   "files": [

@@ -118,8 +118,8 @@ export class WebLLMProvider implements LLMProvider {
 
     const response = await this.engine.chat.completions.create({
       messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
+        role: m.role as any,
+        content: m.content as any,
       })),
       temperature: options?.temperature ?? 0.7,
       max_tokens: options?.maxTokens ?? 512,
@@ -141,8 +141,8 @@ export class WebLLMProvider implements LLMProvider {
 
     const chunks = await this.engine.chat.completions.create({
       messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
+        role: m.role as any,
+        content: m.content as any,
       })),
       temperature: options?.temperature ?? 0.7,
       max_tokens: options?.maxTokens ?? 512,
