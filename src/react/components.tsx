@@ -574,13 +574,43 @@ function Chat({
     }
 
     currentMessages.forEach(m => {
-      apiMessages.push({ role: m.role as ChatMessage['role'], content: m.content });
+      let content: string | any[] = m.content;
+      if (m.role === 'user' && m.images && m.images.length > 0) {
+        if (llm.backend === 'webllm') {
+          content = [
+            { type: 'text', text: m.content },
+            ...m.images.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+          ];
+        } else {
+          content = [
+            ...m.images.map(img => ({ type: 'image', image: img.dataUrl })),
+            { type: 'text', text: m.content }
+          ];
+        }
+      }
+      apiMessages.push({ role: m.role as ChatMessage['role'], content });
     });
 
-    apiMessages.push({ role: 'user', content: userContent });
+    let finalUserContent: string | any[] = userContent;
+    if (attachedImages.length > 0) {
+      if (llm.backend === 'webllm') {
+        finalUserContent = [
+          { type: 'text', text: userContent },
+          ...attachedImages.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+        ];
+      } else {
+        finalUserContent = [
+          ...attachedImages.map(img => ({ type: 'image', image: img.dataUrl })),
+          { type: 'text', text: userContent }
+        ];
+      }
+    }
+
+    apiMessages.push({ role: 'user', content: finalUserContent });
 
     try {
       const response = await llm.stream(
+
         apiMessages,
         (_token: string, fullText: string) => {
           if (abortRef.current) return;

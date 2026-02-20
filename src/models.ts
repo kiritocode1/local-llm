@@ -84,6 +84,12 @@ export const TRANSFORMERS_MODELS = {
   'qwen-2.5-coder-0.5b': 'onnx-community/Qwen2.5-Coder-0.5B-Instruct',
   'qwen-2.5-coder-1.5b': 'onnx-community/Qwen2.5-Coder-1.5B-Instruct',
 
+  // === Vision Models ===
+  'qwen-2.5-vl-3b': 'onnx-community/Qwen2.5-VL-3B-Instruct',
+  'moondream2': 'Xenova/moondream2',
+  'phi-3.5-vision': 'onnx-community/Phi-3.5-vision-instruct',
+
+
   // === Qwen 3 Models (Alibaba) - Latest generation ===
   'qwen-3-0.6b': 'onnx-community/Qwen3-0.6B-ONNX',
 

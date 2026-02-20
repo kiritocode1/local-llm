@@ -15,8 +15,8 @@ import type {
   Quantization,
 } from '../types';
 
-// Import the specific pipeline type we need
-import type { TextGenerationPipeline } from '@huggingface/transformers';
+// Import the specific pipeline types we need
+import { pipeline, type TextGenerationPipeline, type ImageToTextPipeline } from '@huggingface/transformers';
 
 /**
  * Default model for Transformers.js backend
@@ -44,86 +44,11 @@ export const TRANSFORMERS_MODEL_SIZES: Record<TransformersModelAlias, string> = 
 };
 
 /**
- * Detect the chat template format based on model ID
+ * Utility to check if a model is a vision model based on its ID
  */
-function detectChatFormat(modelId: string): 'chatml' | 'llama' | 'phi' | 'generic' {
+function isVisionModel(modelId: string): boolean {
   const lower = modelId.toLowerCase();
-  
-  if (lower.includes('qwen') || lower.includes('smollm')) {
-    return 'chatml';
-  }
-  if (lower.includes('llama') || lower.includes('tinyllama')) {
-    return 'llama';
-  }
-  if (lower.includes('phi')) {
-    return 'phi';
-  }
-  return 'generic';
-}
-
-/**
- * Format messages into a prompt string based on model type
- */
-function formatPrompt(messages: ChatMessage[], modelId: string): string {
-  const format = detectChatFormat(modelId);
-  
-  switch (format) {
-    case 'chatml': {
-      // ChatML format (Qwen, SmolLM, etc.)
-      let prompt = '';
-      for (const msg of messages) {
-        prompt += `<|im_start|>${msg.role}\n${msg.content}<|im_end|>\n`;
-      }
-      prompt += '<|im_start|>assistant\n';
-      return prompt;
-    }
-    
-    case 'llama': {
-      // Llama/TinyLlama format
-      let prompt = '';
-      for (const msg of messages) {
-        if (msg.role === 'system') {
-          prompt += `<s>[INST] <<SYS>>\n${msg.content}\n<</SYS>>\n\n`;
-        } else if (msg.role === 'user') {
-          if (!prompt.includes('[INST]')) {
-            prompt += `<s>[INST] ${msg.content} [/INST]`;
-          } else {
-            prompt += `<s>[INST] ${msg.content} [/INST]`;
-          }
-        } else if (msg.role === 'assistant') {
-          prompt += ` ${msg.content} </s>`;
-        }
-      }
-      return prompt;
-    }
-    
-    case 'phi': {
-      // Phi format
-      let prompt = '';
-      for (const msg of messages) {
-        if (msg.role === 'system') {
-          prompt += `<|system|>\n${msg.content}<|end|>\n`;
-        } else if (msg.role === 'user') {
-          prompt += `<|user|>\n${msg.content}<|end|>\n`;
-        } else if (msg.role === 'assistant') {
-          prompt += `<|assistant|>\n${msg.content}<|end|>\n`;
-        }
-      }
-      prompt += '<|assistant|>\n';
-      return prompt;
-    }
-    
-    case 'generic':
-    default: {
-      // Simple generic format
-      let prompt = '';
-      for (const msg of messages) {
-        prompt += `${msg.role}: ${msg.content}\n`;
-      }
-      prompt += 'assistant: ';
-      return prompt;
-    }
-  }
+  return lower.includes('vl') || lower.includes('vision') || lower.includes('moondream');
 }
 
 /**
@@ -153,7 +78,7 @@ export interface TransformersProviderConfig {
 export class TransformersProvider implements LLMProvider {
   readonly backend: Backend = 'transformers';
 
-  private pipeline: TextGenerationPipeline | null = null;
+  private pipeline: any = null;
   private currentModel: string | null = null;
   private device: Device;
   private quantization: Quantization;
@@ -202,9 +127,9 @@ export class TransformersProvider implements LLMProvider {
     }
 
     // Create pipeline with progress callback
-    const dtype = mapQuantization(this.quantization);
-    
-    this.pipeline = await pipeline('text-generation', resolvedModel, {
+    const task = isVisionModel(resolvedModel) ? 'image-text-to-text' : 'text-generation';
+
+    this.pipeline = await pipeline(task, resolvedModel, {
       dtype: dtype as 'q4' | 'q8' | 'fp16' | 'fp32',
       device: deviceOption as 'wasm' | 'webgpu',
       progress_callback: (progress: { status: string; progress?: number; file?: string }) => {
@@ -216,7 +141,7 @@ export class TransformersProvider implements LLMProvider {
           onProgress(loadProgress);
         }
       },
-    }) as any as TextGenerationPipeline;
+    });
 
     this.currentModel = resolvedModel;
   }
@@ -226,9 +151,7 @@ export class TransformersProvider implements LLMProvider {
       throw new Error('Model not loaded. Call load() first.');
     }
 
-    const prompt = formatPrompt(messages, this.currentModel);
-
-    const result = await this.pipeline(prompt, {
+    const result = await this.pipeline(messages, {
       max_new_tokens: options?.maxTokens ?? 512,
       temperature: options?.temperature ?? 0.7,
       top_p: options?.topP ?? 0.95,
@@ -250,8 +173,6 @@ export class TransformersProvider implements LLMProvider {
       throw new Error('Model not loaded. Call load() first.');
     }
 
-    const prompt = formatPrompt(messages, this.currentModel);
-
     // Transformers.js streaming via TextStreamer
     const { TextStreamer } = await import('@huggingface/transformers');
     
@@ -259,13 +180,14 @@ export class TransformersProvider implements LLMProvider {
     
     const streamer = new TextStreamer(this.pipeline.tokenizer, {
       skip_prompt: true,
+      skip_special_tokens: true,
       callback_function: (token: string) => {
         fullText += token;
         onToken(token, fullText);
       },
     });
 
-    await this.pipeline(prompt, {
+    await this.pipeline(messages, {
       max_new_tokens: options?.maxTokens ?? 512,
       temperature: options?.temperature ?? 0.7,
       top_p: options?.topP ?? 0.95,
