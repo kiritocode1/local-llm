@@ -141,7 +141,7 @@ export function ChatInput({
 
   return (
     <div 
-      className={`relative flex flex-col bg-transparent rounded-none transition-colors p-0 font-mono ${className}`}
+      className={`relative flex flex-col bg-transparent border border-current/50 rounded-none transition-colors p-4 font-mono ${className}`}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
