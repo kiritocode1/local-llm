@@ -488,10 +488,27 @@ function injectChatStyles(theme: 'dark' | 'light') {
       background: ${d ? 'rgba(255,50,50,0.08)' : 'rgba(200,0,0,0.04)'};
     }
 
-    /* Input Area */
     .llm-chat-input-area {
       padding: 12px 16px 16px;
       border-top: 1px solid ${borderSubtle};
+    }
+
+    /* Streamdown Animation CSS */
+    @keyframes sd-fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes sd-blurIn {
+      from { opacity: 0; filter: blur(4px); }
+      to { opacity: 1; filter: blur(0); }
+    }
+    @keyframes sd-slideUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    [data-sd-animate] {
+      animation: var(--sd-animation, sd-fadeIn) var(--sd-duration, 150ms)
+        var(--sd-easing, ease) both;
     }
 
     @keyframes llm-pulse {
@@ -844,6 +861,8 @@ function Chat({
               <div className="llm-chat-assistant-content">
                 <Streamdown 
                   plugins={{ code, mermaid }}
+                  animated={true}
+                  isAnimating={false}
                 >
                   {msg.content}
                 </Streamdown>
@@ -858,6 +877,8 @@ function Chat({
             <div className="llm-chat-assistant-content">
                 <Streamdown 
                   plugins={{ code, mermaid }}
+                  animated={true}
+                  isAnimating={isGenerating}
                 >
                   {streamingText}
                 </Streamdown>
