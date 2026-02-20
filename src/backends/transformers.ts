@@ -35,8 +35,7 @@ export const TRANSFORMERS_MODEL_SIZES: Record<TransformersModelAlias, string> = 
   'qwen-2.5-1.5b': '~900MB',
   'qwen-2.5-coder-0.5b': '~350MB',
   'qwen-2.5-coder-1.5b': '~900MB',
-  'qwen-2.5-vl-3b': '~2.6GB',
-  'qwen-3-0.6b': '~400MB',
+
   'smollm2-135m': '~100MB',
   'smollm2-1.7b': '~1GB',
   'phi-3.5-vision': '~5GB',

@@ -43,10 +43,7 @@ export const WEBLLM_MODEL_SIZES: Record<WebLLMModelAlias, string> = {
   'qwen-2.5-7b': '~5.1GB',
   'qwen-2.5-coder-0.5b': '~945MB',
   'qwen-2.5-coder-1.5b': '~1.6GB',
-  'qwen-3-0.6b': '~1.4GB',
-  'qwen-3-1.7b': '~2GB',
-  'qwen-3-4b': '~3.4GB',
-  'qwen-3-8b': '~5.7GB',
+
   'gemma-2-2b': '~1.9GB',
   'gemma-2-2b-1k': '~1.6GB',
   'gemma-2-9b': '~6.4GB',

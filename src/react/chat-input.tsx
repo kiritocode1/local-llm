@@ -385,6 +385,34 @@ function ChatInput({
   );
 
   const processFile = useCallback((file: File) => {
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          if (!arrayBuffer) return;
+          const pdfjsLib = await import('pdfjs-dist');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+          
+          const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+          let fullText = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map((item: any) => item.str).join(' ');
+            fullText += `--- Page ${i} ---\n${pageText}\n\n`;
+          }
+          
+          const newText = `[Extracted from ${file.name}]\n${fullText}`;
+          onChange(value ? `${value}\n\n${newText}` : newText);
+        } catch (err) {
+          console.error('Error extracting PDF:', err);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      return;
+    }
+
     if (!file.type.startsWith('image/')) return;
     
     const reader = new FileReader();
@@ -400,7 +428,7 @@ function ChatInput({
       }
     };
     reader.readAsDataURL(file);
-  }, [onImageAdd]);
+  }, [onImageAdd, onChange, value]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
@@ -463,7 +491,7 @@ function ChatInput({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.pdf"
         multiple
         className="llm-ci-file-input"
         onChange={handleFileSelect}

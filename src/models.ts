@@ -36,11 +36,7 @@ export const WEBLLM_MODELS = {
   'qwen-2.5-coder-0.5b': 'Qwen2.5-Coder-0.5B-Instruct-q4f16_1-MLC',
   'qwen-2.5-coder-1.5b': 'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC',
 
-  // === Qwen 3 Models (Alibaba) - Latest generation ===
-  'qwen-3-0.6b': 'Qwen3-0.6B-q4f16_1-MLC',
-  'qwen-3-1.7b': 'Qwen3-1.7B-q4f16_1-MLC',
-  'qwen-3-4b': 'Qwen3-4B-q4f16_1-MLC',
-  'qwen-3-8b': 'Qwen3-8B-q4f16_1-MLC',
+
 
   // === Gemma 2 Models (Google) - Efficient and capable ===
   'gemma-2-2b': 'gemma-2-2b-it-q4f16_1-MLC',
@@ -85,12 +81,7 @@ export const TRANSFORMERS_MODELS = {
   'qwen-2.5-coder-1.5b': 'onnx-community/Qwen2.5-Coder-1.5B-Instruct',
 
   // === Vision Models ===
-  'qwen-2.5-vl-3b': 'onnx-community/Qwen2.5-VL-3B-Instruct',
   'phi-3.5-vision': 'onnx-community/Phi-3.5-vision-instruct',
-
-
-  // === Qwen 3 Models (Alibaba) - Latest generation ===
-  'qwen-3-0.6b': 'onnx-community/Qwen3-0.6B-ONNX',
 
   // === SmolLM2 Models (HuggingFace) - Ultra lightweight ===
   'smollm2-135m': 'HuggingFaceTB/SmolLM2-135M-Instruct',
