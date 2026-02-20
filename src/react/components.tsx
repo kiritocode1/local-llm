@@ -9,15 +9,14 @@ import { RotateCcw, ChevronDown } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Streamdown imports
 // @ts-ignore
 import { Streamdown } from 'streamdown';
 // @ts-ignore
-import { createCodePlugin } from '@streamdown/code';
+import { code } from '@streamdown/code';
 // @ts-ignore
-import { createMermaidPlugin } from '@streamdown/mermaid';
+import { mermaid } from '@streamdown/mermaid';
 // @ts-ignore
-import { createMathPlugin } from '@streamdown/math';
+import { math } from '@streamdown/math';
 
 import 'katex/dist/katex.min.css';
 import 'streamdown/styles.css';
@@ -26,23 +25,6 @@ import '../tailwind.css';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-const codePlugin = createCodePlugin({
-  themes: ['github-light', 'github-dark'],
-});
-
-const mermaidPlugin = createMermaidPlugin({
-  config: {
-    theme: 'base',
-    themeVariables: {
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-    },
-  },
-});
-
-const mathPlugin = createMathPlugin({
-  singleDollarTextMath: false,
-});
 
 // ============================================================================
 // Types
@@ -433,14 +415,14 @@ function Chat({
                   </div>
                 )}
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <Streamdown plugins={{ code: codePlugin, mermaid: mermaidPlugin, math: mathPlugin }} components={markdownComponents} animated={true} isAnimating={false}>
+                  <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
                     {msg.content}
                   </Streamdown>
                 </div>
               </div>
             ) : (
               <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
-                <Streamdown plugins={{ code: codePlugin, mermaid: mermaidPlugin, math: mathPlugin }} components={markdownComponents} animated={true} isAnimating={false}>
+                <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
                   {msg.content}
                 </Streamdown>
               </div>
@@ -451,7 +433,7 @@ function Chat({
         {streamingText && (
           <div className="flex flex-col self-start w-full max-w-[85%]">
             <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
-              <Streamdown plugins={{ code: codePlugin, mermaid: mermaidPlugin, math: mathPlugin }} components={markdownComponents} animated={true} isAnimating={isGenerating}>
+              <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={isGenerating}>
                 {streamingText}
               </Streamdown>
             </div>
