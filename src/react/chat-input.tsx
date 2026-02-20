@@ -204,7 +204,6 @@ export function ChatInput({
             onClick={() => fileInputRef.current?.click()}
             title="Attach image or PDF (Ctrl+V to paste)"
           >
-            <Paperclip className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap">[ FILE ]</span>
             <span className="text-[9px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest whitespace-nowrap">ファイル</span>
           </button>
@@ -219,7 +218,6 @@ export function ChatInput({
               className="group flex items-center justify-center gap-2 px-4 py-2 rounded border bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20 transition-all duration-300"
               onClick={onStop}
             >
-              <Square className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap">[ STOP ]</span>
               <span className="text-[9px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest whitespace-nowrap">停止</span>
             </button>
@@ -234,7 +232,6 @@ export function ChatInput({
               onClick={onSend}
               disabled={!canSend}
             >
-              <Send className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap">[ SEND ]</span>
               <span className="text-[9px] opacity-40 group-hover:opacity-60 transition-opacity tracking-widest whitespace-nowrap">送信</span>
             </button>
