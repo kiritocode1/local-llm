@@ -29,10 +29,17 @@ function cn(...inputs: ClassValue[]) {
 
 // Intercept the default streamdown blocks hook to sanitize malformed languages into supported codes.
 function sanitizeMarkdownLanguageBlocks(markdown: string) {
-  // Regex designed to catch malformed mermaid language keys (like 'mer', 'merma', 'mermai')
-  // and force it to resolve to the full 'mermaid' language flag.
+  // Regex designed to catch malformed mermaid language keys (like 'mer', 'merma', 'mermai', 'graphviz', or missing 'mermaid' completely before graph statement)
+  // and force it to resolve to the full 'mermaid' language flag explicitly.
   let cleanMarkdown = markdown;
-  cleanMarkdown = cleanMarkdown.replace(/```(?:mer|merma|mermai|mmd)\n/gi, '```mermaid\n');
+  
+  // Replace anything that is an abbreviated mermaid block opener with '```mermaid'
+  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*(?:mer(?:m|ma|mai)?|mmd|graphviz)[ \t]*\n/gi, '```mermaid\n');
+  
+  // In some instances, the user model hallucinates simply opening a code block, then immediately typing `graph TD` inside without a language tag.
+  // We can't automatically assume ANY unmarked code block is mermaid, but if it starts with common Mermaid DSL terms, we force it.
+  cleanMarkdown = cleanMarkdown.replace(/```[ \t]*\n[ \t]*(graph(?: TB| TD| BT| RL| LR)|sequenceDiagram|classDiagram|stateDiagram|pie(?: title)?|flowchart|gantt|journey)/gi, '```mermaid\n$1');
+
   return parseMarkdownIntoBlocks(cleanMarkdown);
 }
 
