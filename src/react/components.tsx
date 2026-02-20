@@ -137,20 +137,20 @@ function isVisionModel(modelId: string): boolean {
 // ============================================================================
 
 const markdownComponents = {
-  h1: ({ children }: any) => <h1 className="text-3xl font-bold uppercase tracking-tight mt-8 mb-4 text-black dark:text-white border-b-2 border-black dark:border-white pb-2">{children}</h1>,
-  h2: ({ children }: any) => <h2 className="text-2xl font-bold uppercase tracking-tight mt-8 mb-4 text-black dark:text-white border-b-2 border-black dark:border-white pb-2">{children}</h2>,
-  h3: ({ children }: any) => <h3 className="text-xl font-bold uppercase tracking-tight mt-6 mb-3 text-black dark:text-white">{children}</h3>,
-  h4: ({ children }: any) => <h4 className="text-lg font-bold uppercase tracking-tight mt-4 mb-2 text-black dark:text-white">{children}</h4>,
-  p: ({ children }: any) => <p className="leading-relaxed [&:not(:first-child)]:mt-5 text-black dark:text-white text-base font-mono">{children}</p>,
-  ul: ({ children }: any) => <ul className="my-5 ml-6 list-square [&>li]:mt-2 text-black dark:text-white font-mono">{children}</ul>,
-  ol: ({ children }: any) => <ol className="my-5 ml-6 list-decimal [&>li]:mt-2 text-black dark:text-white font-mono">{children}</ol>,
+  h1: ({ children }: any) => <h1 className="text-2xl font-light uppercase tracking-tight mt-6 mb-4 text-white border-b border-white/30 pb-2">{children}</h1>,
+  h2: ({ children }: any) => <h2 className="text-xl font-light uppercase tracking-tight mt-6 mb-4 text-white border-b border-white/30 pb-2">{children}</h2>,
+  h3: ({ children }: any) => <h3 className="text-lg font-light uppercase tracking-tight mt-4 mb-3 text-white">{children}</h3>,
+  h4: ({ children }: any) => <h4 className="text-base font-light uppercase tracking-tight mt-4 mb-2 text-white">{children}</h4>,
+  p: ({ children }: any) => <p className="leading-relaxed [&:not(:first-child)]:mt-4 text-white/80 text-sm font-light font-mono">{children}</p>,
+  ul: ({ children }: any) => <ul className="my-4 ml-6 list-square [&>li]:mt-2 text-white/80 font-mono text-sm font-light">{children}</ul>,
+  ol: ({ children }: any) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2 text-white/80 font-mono text-sm font-light">{children}</ol>,
   li: ({ children }: any) => <li>{children}</li>,
-  blockquote: ({ children }: any) => <blockquote className="mt-5 border-l-4 border-black dark:border-white pl-4 italic text-black dark:text-white font-mono">{children}</blockquote>,
-  a: ({ href, children }: any) => <a href={href} className="font-bold underline text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors" target="_blank" rel="noopener noreferrer">{children}</a>,
-  table: ({ children }: any) => <div className="my-5 w-full overflow-y-auto border-2 border-black dark:border-white"><table className="w-full text-base font-mono">{children}</table></div>,
-  tr: ({ children }: any) => <tr className="m-0 border-b-2 border-black dark:border-white p-0 even:bg-black/5 dark:even:bg-white/5">{children}</tr>,
-  th: ({ children }: any) => <th className="border-r-2 last:border-r-0 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-4 py-2 font-bold uppercase text-left">{children}</th>,
-  td: ({ children }: any) => <td className="border-r-2 last:border-r-0 border-black dark:border-white px-4 py-2 text-left text-black dark:text-white">{children}</td>,
+  blockquote: ({ children }: any) => <blockquote className="mt-4 border border-white/30 p-4 italic text-white/60 font-mono text-sm font-light bg-transparent">{children}</blockquote>,
+  a: ({ href, children }: any) => <a href={href} className="underline text-white hover:bg-white hover:text-black transition-colors" target="_blank" rel="noopener noreferrer">{children}</a>,
+  table: ({ children }: any) => <div className="my-4 w-full overflow-y-auto border border-white/30"><table className="w-full text-sm font-mono font-light text-white">{children}</table></div>,
+  tr: ({ children }: any) => <tr className="m-0 border-b border-white/30 p-0 hover:bg-white/5">{children}</tr>,
+  th: ({ children }: any) => <th className="border-r border-white/30 last:border-r-0 text-white/50 px-4 py-2 font-light uppercase text-left">{children}</th>,
+  td: ({ children }: any) => <td className="border-r border-white/30 last:border-r-0 px-4 py-2 text-left text-white/80">{children}</td>,
 };
 
 // ============================================================================
@@ -191,7 +191,7 @@ function ModelSelector({
     <div className="relative font-mono" ref={ref}>
       <button 
         type="button" 
-        className="flex items-center gap-2 px-3 py-1.5 border-2 border-black dark:border-white bg-transparent text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-xs font-bold uppercase tracking-widest transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 border border-white/30 bg-transparent text-white hover:bg-white hover:text-black text-xs font-light uppercase tracking-widest transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayModel}</span>
@@ -199,16 +199,16 @@ function ModelSelector({
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-[#fafafa] dark:bg-black border-2 border-black dark:border-white z-50 p-2 scrollbar-none">
-          <div className="px-3 py-2 text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest border-b-2 border-black/10 dark:border-white/10 mb-1">WebLLM</div>
+        <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-h-[300px] overflow-y-auto bg-black border border-white/30 z-50 p-2 scrollbar-none">
+          <div className="px-3 py-2 text-[10px] font-light text-white/50 uppercase tracking-widest border-b border-white/10 mb-1">WebLLM</div>
           {Object.entries(WEBLLM_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
-                "block w-full text-left px-3 py-2.5 text-xs font-bold uppercase tracking-wider truncate transition-colors",
+                "block w-full text-left px-3 py-2.5 text-xs font-light uppercase tracking-wider truncate transition-colors",
                 currentModel === value 
-                  ? "bg-black text-white dark:bg-white dark:text-black" 
-                  : "text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10"
+                  ? "bg-white text-black" 
+                  : "text-white hover:bg-white/10"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
@@ -216,15 +216,15 @@ function ModelSelector({
             </button>
           ))}
           
-          <div className="px-3 py-2 text-[10px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest mt-4 border-b-2 border-black/10 dark:border-white/10 mb-1">Transformers.js</div>
+          <div className="px-3 py-2 text-[10px] font-light text-white/50 uppercase tracking-widest mt-4 border-b border-white/10 mb-1">Transformers.js</div>
           {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
             <button
               key={key}
               className={cn(
-                "block w-full text-left px-3 py-2.5 text-xs font-bold uppercase tracking-wider truncate transition-colors",
+                "block w-full text-left px-3 py-2.5 text-xs font-light uppercase tracking-wider truncate transition-colors",
                 currentModel === value 
-                  ? "bg-black text-white dark:bg-white dark:text-black" 
-                  : "text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10"
+                  ? "bg-white text-black" 
+                  : "text-white hover:bg-white/10"
               )}
               onClick={() => { onSelect(value); setIsOpen(false); }}
             >
@@ -399,33 +399,33 @@ function Chat({
   };
 
   return (
-    <div className={cn("flex flex-col bg-[#fafafa] dark:bg-black border-2 border-black dark:border-white font-mono rounded-none overflow-hidden", className)} style={{ maxHeight, height: '100%' }}>
+    <div className={cn("flex flex-col bg-black text-white font-mono rounded-none overflow-hidden", className)} style={{ maxHeight, height: '100%' }}>
       {/* Header */}
       {showHeader && (
-        <div className="flex items-center justify-between px-6 py-5 border-b-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
+        <div className="flex items-center justify-between px-6 py-4 bg-black border-b border-white/30">
           {onModelChange ? (
             <ModelSelector 
               currentModel={modelId} 
               onSelect={onModelChange}
             />
           ) : (
-             <div className="px-4 py-1.5 border-2 border-black dark:border-white flex items-center gap-3">
-               <span className="text-sm font-bold uppercase tracking-widest text-black dark:text-white">
+             <div className="px-3 py-1.5 border border-white/30 flex items-center gap-3">
+               <span className="text-xs font-light uppercase tracking-widest text-white">
                  {modelId?.split('/').pop()}
                </span>
                {modelId && isVisionModel(modelId) && (
-                 <span className="px-2 py-0.5 border border-black dark:border-white text-[10px] font-bold uppercase tracking-widest text-black dark:text-white bg-transparent">VISION</span>
+                 <span className="px-1.5 py-0.5 border border-white/30 text-[9px] font-light uppercase tracking-widest text-white bg-transparent">VISION</span>
                )}
              </div>
           )}
           
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold tracking-widest text-black dark:text-white uppercase">
+            <span className="text-[10px] font-light tracking-widest text-white uppercase opacity-70">
               {error ? 'ERR' : isReady ? 'RDY' : isLoading ? 'LOD' : 'IDL'}
             </span>
             <div className={cn(
-              "w-3 h-3 border border-black dark:border-white rounded-none",
-              error ? "bg-red-500" : isReady ? "bg-black dark:bg-white" : "bg-transparent animate-pulse"
+              "w-2 h-2 rounded-none",
+              error ? "bg-red-500" : isReady ? "bg-white" : "bg-white/30 animate-pulse"
             )} />
           </div>
         </div>
@@ -433,14 +433,14 @@ function Chat({
 
       {/* Progress Bar */}
       {showProgress && isLoading && loadProgress && (
-        <div className="px-6 py-4 border-b-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
-          <div className="flex justify-between items-center mb-2 font-mono uppercase tracking-widest text-xs">
-            <span className="text-black dark:text-white font-bold truncate pr-4">{loadProgress.status}</span>
-            <span className="font-bold text-black dark:text-white">{Math.round(loadProgress.progress)}%</span>
+        <div className="px-6 py-4 border-b border-white/30 bg-black">
+          <div className="flex justify-between items-center mb-2 font-mono uppercase tracking-widest text-[10px]">
+            <span className="text-white/70 font-light truncate pr-4">{loadProgress.status}</span>
+            <span className="font-light text-white/70">{Math.round(loadProgress.progress)}%</span>
           </div>
-          <div className="h-4 w-full border-2 border-black dark:border-white bg-transparent rounded-none overflow-hidden relative">
+          <div className="h-1 w-full bg-white/10 rounded-none overflow-hidden relative">
             <div
-              className="h-full bg-black dark:bg-white transition-all duration-300 ease-out"
+              className="h-full bg-white transition-all duration-300 ease-out"
               style={{ width: `${Math.min(100, loadProgress.progress)}%` }}
             />
           </div>
@@ -449,39 +449,40 @@ function Chat({
 
       {/* Error Banner */}
       {error && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mx-6 mt-6 p-4 border-2 border-red-500 bg-red-50 dark:bg-red-950/20 rounded-none gap-4">
-          <span className="text-sm text-red-600 dark:text-red-400 font-bold uppercase tracking-wider">{error.message}</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mx-6 mt-6 p-4 border border-red-500/50 bg-red-500/10 rounded-none gap-4">
+          <span className="text-[10px] text-red-500 font-light uppercase tracking-wider">{error.message}</span>
           <button 
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white border-2 border-red-500 hover:bg-transparent hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-none text-xs font-bold uppercase tracking-widest"
+            className="flex items-center gap-2 px-3 py-1.5 bg-transparent text-red-500 border border-red-500/50 hover:bg-red-500/20 transition-colors rounded-none text-[10px] font-light uppercase tracking-widest"
             onClick={reload}
           >
-            <RotateCcw className="w-4 h-4" /> REBOOT
+            <RotateCcw className="w-3 h-3" /> REBOOT
           </button>
         </div>
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 scrollbar-thin scrollbar-thumb-black dark:scrollbar-thumb-white scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
         {!isLoading && messages.length === 0 && !error && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center mt-12 mb-8 p-8 border-2 border-black dark:border-white">
-            <div className="w-20 h-20 border-4 border-black dark:border-white mb-6 flex items-center justify-center text-3xl font-black bg-black text-white dark:bg-white dark:text-black">
+          <div className="flex-1 flex flex-col items-center justify-center text-center mt-12 mb-8 p-8 border border-white/10">
+            <div className="w-16 h-16 border border-white/30 mb-6 flex items-center justify-center text-xl font-light bg-transparent text-white/50">
               //
             </div>
-            <h3 className="text-3xl font-black uppercase tracking-widest text-black dark:text-white mb-4">SYSTEM READY</h3>
-            <p className="text-black/70 dark:text-white/70 max-w-sm uppercase text-sm leading-relaxed tracking-wider font-bold">
+            <h3 className="text-xl font-light uppercase tracking-widest text-white/70 mb-4">SYSTEM READY</h3>
+            <p className="text-white/40 max-w-sm uppercase text-[10px] leading-relaxed tracking-widest font-light">
               [ MARKDOWN | MATH | MERMAID ] INITIALIZED. AWAITING INPUT.
             </p>
           </div>
         )}
 
         {messages.map((msg, i) => (
-          <div key={i} className={cn("flex flex-col max-w-[90%]", msg.role === 'user' ? "self-end" : "self-start w-full")}>
+          <div key={i} className="flex flex-col w-full">
             {msg.role === 'user' ? (
-              <div className="bg-black text-[#fafafa] dark:bg-white dark:text-black px-6 py-5 border-2 border-black dark:border-white rounded-none">
+              <div className="bg-transparent text-white/50 px-4 py-4 border border-white/10 rounded-none w-full">
+                <div className="mb-2 text-[10px] tracking-widest uppercase opacity-50">USER</div>
                 {msg.images && msg.images.length > 0 && (
                   <div className="flex flex-wrap gap-3 mb-4">
                     {msg.images.map(img => (
-                      <img key={img.id} src={img.dataUrl} className="w-32 h-32 object-cover border-2 border-current shadow-none" alt="attachment" />
+                      <img key={img.id} src={img.dataUrl} className="w-24 h-24 object-cover border border-white/30" alt="attachment" />
                     ))}
                   </div>
                 )}
@@ -500,7 +501,8 @@ function Chat({
                 </div>
               </div>
             ) : (
-              <div className="prose prose-base dark:prose-invert max-w-none p-6 w-full min-w-0 font-mono border-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
+              <div className="prose prose-base dark:prose-invert max-w-none px-4 py-4 w-full min-w-0 font-mono border border-white/10 bg-transparent mt-1">
+                <div className="mb-2 text-[10px] tracking-widest uppercase opacity-50 text-white">SYSTEM</div>
                 <Streamdown 
                   plugins={{ code, mermaid, math }} 
                   components={markdownComponents} 
@@ -518,8 +520,9 @@ function Chat({
         ))}
 
         {streamingText && (
-          <div className="flex flex-col self-start w-full max-w-[90%]">
-            <div className="prose prose-base dark:prose-invert max-w-none p-6 w-full min-w-0 font-mono border-2 border-black dark:border-white bg-[#fafafa] dark:bg-black">
+          <div className="flex flex-col w-full mt-1">
+            <div className="prose prose-base dark:prose-invert max-w-none px-4 py-4 w-full min-w-0 font-mono border border-white/10 bg-transparent">
+              <div className="mb-2 text-[10px] tracking-widest uppercase opacity-50 text-white">SYSTEM</div>
               <Streamdown 
                 plugins={{ code, mermaid, math }} 
                 components={markdownComponents} 
@@ -540,7 +543,7 @@ function Chat({
       </div>
 
       {/* Input Area */}
-      <div className="p-6 bg-[#fafafa] dark:bg-black border-t-2 border-black dark:border-white">
+      <div className="p-4 bg-black border-t border-white/30">
         <ChatInput
           value={input}
           onChange={setInput}
@@ -548,7 +551,7 @@ function Chat({
           onStop={handleStop}
           disabled={!isReady && !isLoading}
           isGenerating={isGenerating}
-          placeholder={isLoading ? 'Model is loading...' : placeholder}
+          placeholder={isLoading ? 'MODEL IS LOADING...' : 'MESSAGE...'}
           actions={inputActions}
           images={images}
           onImageAdd={img => setImages(prev => [...prev, img])}

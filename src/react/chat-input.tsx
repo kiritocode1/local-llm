@@ -139,15 +139,15 @@ export function ChatInput({
 
   return (
     <div 
-      className={`relative flex flex-col bg-[#fafafa] dark:bg-black border-2 border-black dark:border-white rounded-none focus-within:ring-0 focus-within:border-black dark:focus-within:border-white transition-none p-4 font-mono ${className}`}
+      className={`relative flex flex-col bg-black border border-white/30 rounded-none focus-within:border-white/60 transition-colors p-3 font-mono ${className}`}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
       {isDragging && (
-        <div className="absolute inset-x-0 inset-y-0 bg-[#fafafa]/90 dark:bg-black/90 flex flex-col items-center justify-center z-20 border-4 border-dashed border-black dark:border-white rounded-none mx-2 my-2">
-          <ImagePlus className="w-10 h-10 text-black dark:text-white mb-4" />
-          <span className="text-black dark:text-white font-bold tracking-widest uppercase text-lg">Drop file to attach</span>
+        <div className="absolute inset-x-0 inset-y-0 bg-black/90 flex flex-col items-center justify-center z-20 border border-dashed border-white/50 rounded-none m-1">
+          <ImagePlus className="w-8 h-8 text-white mb-2" />
+          <span className="text-white font-light tracking-widest uppercase text-xs">Drop file to attach</span>
         </div>
       )}
 
@@ -161,16 +161,16 @@ export function ChatInput({
       />
 
       {images.length > 0 && (
-        <div className="flex flex-wrap gap-3 mb-4 px-2 mt-2">
+        <div className="flex flex-wrap gap-2 mb-3">
           {images.map((img) => (
-            <div key={img.id} className="relative w-20 h-20 overflow-hidden border-2 border-black dark:border-white rounded-none group select-none">
+            <div key={img.id} className="relative w-16 h-16 overflow-hidden border border-white/30 rounded-none group select-none">
               <img src={img.dataUrl} alt="attachment" className="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0" />
               <button 
                 type="button"
-                className="absolute top-0 right-0 w-6 h-6 bg-black text-white dark:bg-white dark:text-black border-l-2 border-b-2 border-black dark:border-white rounded-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-none"
+                className="absolute top-0 right-0 w-5 h-5 bg-black/80 text-white border-l border-b border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onImageRemove?.(img.id)}
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3" />
               </button>
             </div>
           ))}
@@ -186,11 +186,11 @@ export function ChatInput({
         placeholder={placeholder}
         disabled={disabled && !isGenerating}
         rows={1}
-        className="w-full min-h-[24px] max-h-[200px] resize-none border-none outline-none bg-transparent text-black dark:text-white text-base font-mono leading-relaxed px-2 py-1 m-0 placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase placeholder:tracking-widest scrollbar-thin scrollbar-thumb-black dark:scrollbar-thumb-white scrollbar-track-transparent"
+        className="w-full min-h-[24px] max-h-[200px] resize-none border-none outline-none bg-transparent text-white text-sm font-light font-mono leading-relaxed p-0 m-0 placeholder:text-white/30 placeholder:uppercase placeholder:tracking-widest scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
       />
 
-      <div className="flex items-end justify-between mt-6 px-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+        <div className="flex items-center gap-2">
           {modelSelector && (
             <div className="mr-2">
               {modelSelector}
@@ -199,37 +199,37 @@ export function ChatInput({
           
           <button 
             type="button" 
-            className="flex items-center justify-center w-10 h-10 border-2 border-black dark:border-white rounded-none text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-none text-white/50 hover:text-white transition-colors"
             onClick={() => fileInputRef.current?.click()}
             title="Attach image or PDF (Ctrl+V to paste)"
           >
-            <ImagePlus className="w-5 h-5" />
+            <ImagePlus className="w-4 h-4" />
           </button>
           
           {actions}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {isGenerating ? (
             <button
               type="button"
-              className="flex items-center justify-center h-10 px-6 rounded-none border-2 border-red-500 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white font-bold uppercase tracking-widest transition-colors gap-2 cursor-pointer shadow-none"
+              className="flex items-center justify-center h-8 px-4 rounded-none border border-red-500/50 bg-red-500/10 text-red-500 hover:bg-red-500/20 font-light text-[10px] uppercase tracking-widest transition-colors gap-2 cursor-pointer"
               onClick={onStop}
             >
-              <Square className="w-4 h-4 fill-current" /> STOP
+              <Square className="w-3 h-3 fill-current" /> STOP
             </button>
           ) : (
             <button
               type="button"
-              className={`flex items-center justify-center h-10 px-6 rounded-none border-2 font-bold uppercase tracking-widest transition-none gap-2 ${
+              className={`flex items-center justify-center h-8 px-4 rounded-none border text-[10px] font-light uppercase tracking-widest transition-colors gap-2 ${
                 canSend 
-                  ? 'border-black dark:border-white bg-black dark:bg-white text-[#fafafa] dark:text-black hover:bg-transparent hover:text-black dark:hover:bg-transparent dark:hover:text-white cursor-pointer' 
-                  : 'border-black/20 dark:border-white/20 bg-transparent text-black/20 dark:text-white/20 cursor-not-allowed'
+                  ? 'border-white/30 bg-transparent text-white hover:bg-white hover:text-black cursor-pointer' 
+                  : 'border-white/10 bg-transparent text-white/20 cursor-not-allowed'
               }`}
               onClick={onSend}
               disabled={!canSend}
             >
-              SEND <Send className="w-4 h-4" />
+              SEND
             </button>
           )}
         </div>
