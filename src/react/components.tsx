@@ -5,12 +5,13 @@ import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-inp
 import { WEBLLM_MODELS, TRANSFORMERS_MODELS, type SupportedModel } from '../models';
 import type { ChatMessage } from '../types';
 
-import { RotateCcw, ChevronDown } from 'lucide-react';
+import { RotateCcw, ChevronDown, AlertCircleIcon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // @ts-ignore
 import { Streamdown } from 'streamdown';
+import type { MermaidErrorComponentProps } from 'streamdown';
 // @ts-ignore
 import { code } from '@streamdown/code';
 // @ts-ignore
@@ -25,6 +26,33 @@ import '../tailwind.css';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+const CustomMermaidError = ({ error, retry }: MermaidErrorComponentProps) => (
+  <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 my-4 font-sans">
+    <div className="flex items-center gap-2">
+      <span className="text-xl"><AlertCircleIcon className="text-red-500" /></span>
+      <p className="font-semibold text-red-500 text-sm">Failed to render Mermaid diagram</p>
+    </div>
+    <div className="mt-2 text-red-400/80 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
+      {error}
+    </div>
+    <button
+      onClick={retry}
+      className="mt-3 rounded bg-red-500/20 px-3 py-1.5 text-red-500 text-xs font-medium hover:bg-red-500/30 transition-colors"
+    >
+      Try Again
+    </button>
+  </div>
+);
+
+const streamdownControls = {
+  mermaid: {
+    fullscreen: true,
+    download: true,
+    copy: true,
+    panZoom: true,
+  }
+};
 
 // ============================================================================
 // Types
@@ -209,6 +237,15 @@ function Chat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef(false);
   const isProcessingRef = useRef(false);
+
+  const mermaidOptions = useMemo(() => ({
+    errorComponent: CustomMermaidError,
+    config: {
+      theme: theme === 'dark' ? 'dark' : 'default',
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      securityLevel: 'strict',
+    }
+  } as any), [theme]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -415,14 +452,28 @@ function Chat({
                   </div>
                 )}
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
+                  <Streamdown 
+                    plugins={{ code, mermaid, math }} 
+                    components={markdownComponents} 
+                    animated={true} 
+                    isAnimating={false}
+                    mermaid={mermaidOptions}
+                    controls={streamdownControls}
+                  >
                     {msg.content}
                   </Streamdown>
                 </div>
               </div>
             ) : (
               <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
-                <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={false}>
+                <Streamdown 
+                  plugins={{ code, mermaid, math }} 
+                  components={markdownComponents} 
+                  animated={true} 
+                  isAnimating={false}
+                  mermaid={mermaidOptions}
+                  controls={streamdownControls}
+                >
                   {msg.content}
                 </Streamdown>
               </div>
@@ -433,7 +484,14 @@ function Chat({
         {streamingText && (
           <div className="flex flex-col self-start w-full max-w-[85%]">
             <div className="prose prose-sm dark:prose-invert max-w-none px-2 w-full min-w-0">
-              <Streamdown plugins={{ code, mermaid, math }} components={markdownComponents} animated={true} isAnimating={isGenerating}>
+              <Streamdown 
+                plugins={{ code, mermaid, math }} 
+                components={markdownComponents} 
+                animated={true} 
+                isAnimating={isGenerating}
+                mermaid={mermaidOptions}
+                controls={streamdownControls}
+              >
                 {streamingText}
               </Streamdown>
             </div>
