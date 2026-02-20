@@ -21,6 +21,7 @@ import { math } from '@streamdown/math';
 
 import 'katex/dist/katex.min.css';
 import 'streamdown/styles.css';
+import '../tailwind.css';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -247,7 +248,7 @@ function Chat({
 
     currentMessages.forEach(m => {
       let content: string | any[] = m.content;
-      if (m.role === 'user' && m.images && m.images.length > 0) {
+      if (m.role === 'user' && m.images && m.images.length > 0 && isVisionModel(modelId || '')) {
         if (llm.backend === 'webllm') {
           content = [
             { type: 'text', text: m.content },
@@ -264,7 +265,7 @@ function Chat({
     });
 
     let finalUserContent: string | any[] = userContent;
-    if (attachedImages.length > 0) {
+    if (attachedImages.length > 0 && isVisionModel(modelId || '')) {
       if (llm.backend === 'webllm') {
         finalUserContent = [
           { type: 'text', text: userContent },

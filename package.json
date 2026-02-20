@@ -1,6 +1,6 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
   "type": "module",
   "main": "./dist/index.js",
@@ -80,10 +80,14 @@
     "node": ">=18"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@types/bun": "latest",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/react": "^18.3.0 || ^19.0.0",
     "@webgpu/types": "^0.1.69",
+    "autoprefixer": "^10.4.24",
+    "postcss": "^8.5.6",
+    "tailwindcss": "3",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
