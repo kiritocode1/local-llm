@@ -327,10 +327,13 @@ function injectChatStyles(theme: 'dark' | 'light') {
     .llm-chat-bubble--user {
       align-self: flex-end;
       max-width: 80%;
+      overflow-wrap: break-word;
     }
     .llm-chat-bubble--assistant {
       align-self: flex-start;
       width: 100%;
+      min-width: 0; /* Prevents flex children from expanding past 100% */
+      overflow-x: hidden;
     }
     
     /* User message — flat, subtle bg, no radius */
@@ -344,30 +347,96 @@ function injectChatStyles(theme: 'dark' | 'light') {
       color: ${text};
     }
     
-    /* Assistant message */
+    /* Streamdown Overrides / Markdown Styling */
     .llm-chat-assistant-content {
       font-size: 14px;
       line-height: 1.7;
-      color: ${d ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)'};
+      color: ${text};
+      word-wrap: break-word;
+    }
+    .llm-chat-assistant-content > *:first-child { margin-top: 0; }
+    .llm-chat-assistant-content > *:last-child { margin-bottom: 0; }
+    
+    .llm-chat-assistant-content p {
+      margin: 0 0 12px 0;
     }
     
-    /* Streamdown Overrides */
+    .llm-chat-assistant-content h1,
+    .llm-chat-assistant-content h2,
+    .llm-chat-assistant-content h3,
+    .llm-chat-assistant-content h4 {
+      margin: 20px 0 10px 0;
+      color: ${text};
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .llm-chat-assistant-content h1 { font-size: 1.5em; }
+    .llm-chat-assistant-content h2 { font-size: 1.3em; }
+    .llm-chat-assistant-content h3 { font-size: 1.1em; }
+    
+    .llm-chat-assistant-content ul,
+    .llm-chat-assistant-content ol {
+      margin: 0 0 12px 0;
+      padding-left: 24px;
+    }
+    .llm-chat-assistant-content li {
+      margin-bottom: 4px;
+    }
+    
     .llm-chat-assistant-content pre {
       background: ${surfaceSubtle} !important;
       border: 1px solid ${borderSubtle} !important;
-      border-radius: 0 !important;
+      border-radius: 6px !important;
       padding: 12px !important;
       margin: 12px 0 !important;
+      overflow-x: auto !important;
+      white-space: pre !important;
+      max-width: 100%;
     }
     .llm-chat-assistant-content code {
       font-family: ${monoFont} !important;
       font-size: 13px !important;
+      white-space: inherit;
     }
     .llm-chat-assistant-content :not(pre) > code {
       background: ${surfaceSubtle};
       border: 1px solid ${borderSubtle};
-      padding: 1px 5px;
+      border-radius: 4px;
+      padding: 2px 5px;
       font-size: 12.5px !important;
+      white-space: pre-wrap !important;
+      word-break: break-word;
+    }
+    
+    .llm-chat-assistant-content blockquote {
+      border-left: 3px solid ${borderSubtle};
+      margin: 0 0 12px 0;
+      padding-left: 12px;
+      color: ${textTertiary};
+    }
+    
+    .llm-chat-assistant-content a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .llm-chat-assistant-content a:hover {
+      text-decoration: underline;
+    }
+    
+    .llm-chat-assistant-content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+    }
+    .llm-chat-assistant-content th,
+    .llm-chat-assistant-content td {
+      border: 1px solid ${borderSubtle};
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .llm-chat-assistant-content th {
+      background: ${surfaceSubtle};
+      font-weight: 600;
     }
     
     /* Attachments in message */
@@ -763,7 +832,13 @@ function Chat({
                     ))}
                   </div>
                 )}
-                <div className="llm-chat-user-content">{msg.content}</div>
+                <div className="llm-chat-user-content" style={{ padding: '0px' }}>
+                  <div className="llm-chat-assistant-content" style={{ padding: '10px 14px' }}>
+                    <Streamdown plugins={{ code, mermaid }}>
+                      {msg.content}
+                    </Streamdown>
+                  </div>
+                </div>
               </>
             ) : (
               <div className="llm-chat-assistant-content">
