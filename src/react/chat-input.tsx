@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useRef, useEffect, useCallback, useState } from 'react';
+import type { ImageToTextPipeline } from '@huggingface/transformers';
 
 export interface ImageAttachment {
   id: string;
@@ -47,6 +48,37 @@ export function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const captionerPromiseRef = useRef<Promise<ImageToTextPipeline | null> | null>(null);
+
+  // Initialize background captioner
+  useEffect(() => {
+    let mounted = true;
+    if (captionerPromiseRef.current) return;
+
+    const initCaptioner = async () => {
+      try {
+        console.log('[ImagePipeline] Initializing Transformers.js background captioner...');
+        const { pipeline, env } = await import('@huggingface/transformers');
+        env.allowLocalModels = false;
+        env.useBrowserCache = true;
+        
+        // Use a tiny, fast model for browser-based captioning
+        const captioner = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', {
+          device: 'wasm', 
+        });
+        
+        if (mounted) console.log('[ImagePipeline] Captioner loaded successfully!');
+        return captioner;
+      } catch (err) {
+        console.warn('Failed to initialize background captioner:', err);
+        return null;
+      }
+    };
+    
+    captionerPromiseRef.current = initCaptioner();
+    
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -141,13 +173,65 @@ export function ChatInput({
       return;
     }
 
+    if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        if (text) {
+           const id = Math.random().toString(36).substring(7);
+           const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(text)}`;
+           onImageAdd?.({ 
+             id, 
+             dataUrl, 
+             file, 
+             name: file.name,
+             extractedText: text
+           });
+        }
+      };
+      reader.readAsText(file);
+      return;
+    }
+
     if (!file.type.startsWith('image/')) return;
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       if (e.target?.result && typeof e.target.result === 'string') {
         const id = Math.random().toString(36).substring(7);
-        onImageAdd?.({ id, dataUrl: e.target.result, file, name: file.name });
+        const dataUrl = e.target.result;
+        
+        let extractedText: string | undefined;
+
+        if (captionerPromiseRef.current) {
+           console.log(`[ImagePipeline] Generating caption for ${file.name} (Waiting for captioner)...`);
+           try {
+              const captioner = await captionerPromiseRef.current;
+              if (captioner) {
+                // Convert base64 to blob, then to an ImageBitmap or URL for transformers
+                const out = await captioner(dataUrl);
+                console.log('[ImagePipeline] Raw captioner output:', out);
+                // @ts-ignore - transformers.js types are sometimes tricky with arrays/objects
+                if (Array.isArray(out) && out[0] && out[0].generated_text) {
+                   // @ts-ignore
+                   extractedText = out[0].generated_text;
+                // @ts-ignore
+                } else if (!Array.isArray(out) && out.generated_text) {
+                   // @ts-ignore
+                   extractedText = out.generated_text;
+                }
+                console.log('[ImagePipeline] Extracted caption text:', extractedText);
+              } else {
+                 console.log('[ImagePipeline] Captioner initialized to null, skipping caption generation.');
+              }
+           } catch (err) {
+              console.warn('[ImagePipeline] Background captioning failed for image:', err);
+           }
+        } else {
+           console.log('[ImagePipeline] Captioner promise ref is null, skipping caption generation.');
+        }
+
+        onImageAdd?.({ id, dataUrl, file, name: file.name, extractedText });
       }
     };
     reader.readAsDataURL(file);

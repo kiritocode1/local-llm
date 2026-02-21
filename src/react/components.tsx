@@ -385,7 +385,16 @@ function Chat({
     let finalText = text;
     for (const img of currentImages) {
       if (img.extractedText) {
-        finalText += (finalText ? '\n\n' : '') + img.extractedText;
+        let prefix = '';
+        if (img.name.toLowerCase().endsWith('.svg')) {
+          prefix = `📄 SVG Source Code (${img.name}):\n`;
+        } else if (!isVisionModel(modelId || '')) {
+          prefix = `🖼️ Image Auto-Caption (${img.name}):\n`;
+        }
+        
+        if (prefix || img.name.toLowerCase().endsWith('.pdf')) {
+           finalText += (finalText ? '\n\n' : '') + `${prefix}${img.extractedText}`;
+        }
       }
     }
     
