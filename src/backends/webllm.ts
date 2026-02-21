@@ -29,7 +29,7 @@ export type WebLLMModelAlias = WebLLMModelID;
 /**
  * Model size estimates for UI display
  */
-export const WEBLLM_MODEL_SIZES: Record<WebLLMModelAlias, string> = {
+export const WEBLLM_MODEL_SIZES: Partial<Record<WebLLMModelAlias, string>> = {
   'llama-3.2-1b': '~880MB',
   'llama-3.2-3b': '~2.3GB',
   'llama-3.1-8b': '~5GB',
