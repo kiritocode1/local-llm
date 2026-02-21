@@ -531,7 +531,21 @@ function Chat({
                     controls={streamdownControls}
                     parseMarkdownIntoBlocksFn={sanitizeMarkdownLanguageBlocks}
                   >
-                    {msg.content.includes("📄 PDF:") ? (msg.content.split("📄 PDF:")[0] || "").trim() : msg.content}
+                    {[
+                      { match: "📄 PDF:", index: msg.content.indexOf("📄 PDF:") },
+                      { match: "📄 SVG Source Code", index: msg.content.indexOf("📄 SVG Source Code") },
+                      { match: "🖼️ Image Auto-Caption", index: msg.content.indexOf("🖼️ Image Auto-Caption") }
+                    ]
+                      .filter(m => m.index !== -1)
+                      .reduce((min, m) => m.index < min ? m.index : min, msg.content.length) !== msg.content.length
+                        ? msg.content.substring(0, [
+                            { match: "📄 PDF:", index: msg.content.indexOf("📄 PDF:") },
+                            { match: "📄 SVG Source Code", index: msg.content.indexOf("📄 SVG Source Code") },
+                            { match: "🖼️ Image Auto-Caption", index: msg.content.indexOf("🖼️ Image Auto-Caption") }
+                          ]
+                            .filter(m => m.index !== -1)
+                            .reduce((min, m) => m.index < min ? m.index : min, msg.content.length)).trim() 
+                        : msg.content}
                   </Streamdown>
                 </div>
               </div>

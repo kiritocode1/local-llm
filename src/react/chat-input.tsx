@@ -209,7 +209,12 @@ export function ChatInput({
               const captioner = await captionerPromiseRef.current;
               if (captioner) {
                 // Convert base64 to blob, then to an ImageBitmap or URL for transformers
-                const out = await captioner(dataUrl);
+                // Pass generation params to encourage longer, more detailed descriptions
+                const out = await captioner(dataUrl, {
+                   max_new_tokens: 100,
+                   num_beams: 4,
+                   repetition_penalty: 1.5
+                });
                 console.log('[ImagePipeline] Raw captioner output:', out);
                 // @ts-ignore - transformers.js types are sometimes tricky with arrays/objects
                 if (Array.isArray(out) && out[0] && out[0].generated_text) {
