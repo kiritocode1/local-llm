@@ -1,6 +1,6 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
   "type": "module",
   "main": "./dist/index.js",
@@ -101,7 +101,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
-    "@mlc-ai/web-llm": "^0.2.80",
+    "@mlc-ai/web-llm": "^0.2.81",
     "@streamdown/code": "^1.0.3",
     "@streamdown/math": "^1.0.2",
     "@streamdown/mermaid": "^1.0.2",

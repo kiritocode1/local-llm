@@ -301,34 +301,20 @@ function Chat({
     currentMessages.forEach(m => {
       let content: string | any[] = m.content;
       if (m.role === 'user' && m.images && m.images.length > 0 && isVisionModel(modelId || '')) {
-        if (llm.backend === 'webllm') {
-          content = [
-            { type: 'text', text: m.content },
-            ...m.images.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
-          ] as any[];
-        } else {
-          content = [
-            ...m.images.map(img => ({ type: 'image', image: img.dataUrl })),
-            { type: 'text', text: m.content }
-          ] as any[];
-        }
+        content = [
+          { type: 'text', text: m.content },
+          ...m.images.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+        ] as any[];
       }
       apiMessages.push({ role: m.role as ChatMessage['role'], content });
     });
 
     let finalUserContent: string | any[] = userContent;
     if (attachedImages.length > 0 && isVisionModel(modelId || '')) {
-      if (llm.backend === 'webllm') {
-        finalUserContent = [
-          { type: 'text', text: userContent },
-          ...attachedImages.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
-        ] as any[];
-      } else {
-        finalUserContent = [
-          ...attachedImages.map(img => ({ type: 'image', image: img.dataUrl })),
-          { type: 'text', text: userContent }
-        ] as any[];
-      }
+      finalUserContent = [
+        { type: 'text', text: userContent },
+        ...attachedImages.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+      ] as any[];
     }
 
     apiMessages.push({ role: 'user', content: finalUserContent });

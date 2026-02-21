@@ -6,7 +6,7 @@
       "name": "local-llm",
       "dependencies": {
         "@huggingface/transformers": "^3.8.1",
-        "@mlc-ai/web-llm": "^0.2.80",
+        "@mlc-ai/web-llm": "^0.2.81",
         "@streamdown/code": "^1.0.3",
         "@streamdown/math": "^1.0.2",
         "@streamdown/mermaid": "^1.0.2",
@@ -177,7 +177,7 @@
 
     "@mermaid-js/parser": ["@mermaid-js/parser@0.6.3", "", { "dependencies": { "langium": "3.3.1" } }, "sha512-lnjOhe7zyHjc+If7yT4zoedx2vo4sHaTmtkl1+or8BRTnCtDmcTpAjpzDSfCZrshM5bCoz0GyidzadJAH1xobA=="],
 
-    "@mlc-ai/web-llm": ["@mlc-ai/web-llm@0.2.80", "", { "dependencies": { "loglevel": "^1.9.1" } }, "sha512-Hwy1OCsK5cOU4nKr2wIJ2qA1g595PENtO5f2d9Wd/GgFsj5X04uxfaaJfqED8eFAJOpQpn/DirogdEY/yp5jQg=="],
+    "@mlc-ai/web-llm": ["@mlc-ai/web-llm@0.2.81", "", { "dependencies": { "loglevel": "^1.9.1" } }, "sha512-V2zdaHeCfv7KjnN6WOrt85v6tfefDVyTvWXZ5IN7OXu21Ee1hDg/jQu3ANWN/wjy2qdhVD16cAhoNpnxqyf+Gg=="],
 
     "@napi-rs/canvas": ["@napi-rs/canvas@0.1.93", "", { "optionalDependencies": { "@napi-rs/canvas-android-arm64": "0.1.93", "@napi-rs/canvas-darwin-arm64": "0.1.93", "@napi-rs/canvas-darwin-x64": "0.1.93", "@napi-rs/canvas-linux-arm-gnueabihf": "0.1.93", "@napi-rs/canvas-linux-arm64-gnu": "0.1.93", "@napi-rs/canvas-linux-arm64-musl": "0.1.93", "@napi-rs/canvas-linux-riscv64-gnu": "0.1.93", "@napi-rs/canvas-linux-x64-gnu": "0.1.93", "@napi-rs/canvas-linux-x64-musl": "0.1.93", "@napi-rs/canvas-win32-arm64-msvc": "0.1.93", "@napi-rs/canvas-win32-x64-msvc": "0.1.93" } }, "sha512-unVFo8CUlUeJCCxt50+j4yy91NF4x6n9zdGcvEsOFAWzowtZm3mgx8X2D7xjwV0cFSfxmpGPoe+JS77uzeFsxg=="],
 
