@@ -181,6 +181,64 @@ const cleanup = llm.attachToInput("#prompt-input", "#response-output", {
 
 ---
 
+## Usage in Next.js
+
+Using `@blank-utils/llm` in Next.js Requires **two specific configurations** to allow WebAssembly multi-threading & WebWorker access for `SharedArrayBuffer` to work.
+
+### 1. Configure COOP/COEP Headers
+
+In your `next.config.ts` or `next.config.js`, apply the following headers to allow cross-origin isolation:
+
+```typescript
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin", // Required for SharedArrayBuffer
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp", // Required for SharedArrayBuffer
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+```
+
+### 2. Dynamically Import UI Components
+
+WebLLM and WebGPU are exclusively client-side (browser) APIs. If you are using React Server Components (Next.js App Router default), you **MUST** dynamically import the chat interface with `ssr: false`.
+
+```tsx
+// app/page.tsx
+"use client";
+
+import dynamic from "next/dynamic";
+
+// ✅ Correct: Prevents server-side rendering crashes
+const LocalChat = dynamic(
+  () => import("@blank-utils/llm/react").then((mod) => mod.ChatApp),
+  { ssr: false },
+);
+
+export default function Page() {
+  return <LocalChat defaultModel="phi-3.5-mini" theme="dark" />;
+}
+```
+
+---
+
 ## Architecture
 
 ```
@@ -266,12 +324,14 @@ const {
 
 Full chat conversation management with **eager loading** — users can send messages while the model downloads. Messages are queued and processed automatically once the model is ready.
 
+By default, the `<Chat>` component manages this hook entirely for you. However, you can call this manually to implement a head-less chat or custom interface. Multi-modal inputs (like arrays of `text` and `image_url` objects) can be passed directly to `send()` if you manage the image parsing yourself!
+
 ```tsx
 const {
   messages, // ChatMessage[]
   input, // string — controlled input value
   setInput, // (value: string) => void
-  send, // (content?: string) => Promise<string>
+  send, // (content?: string | any[]) => Promise<string>
   isGenerating, // boolean
   isPending, // boolean — message queued, waiting for model
   streamingText, // string — current partial response
