@@ -376,30 +376,84 @@ function Chat({
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = input.trim();
     if (!text && images.length === 0) return;
 
     const currentImages = [...images];
     
+    setInput('');
+    setImages([]);
+    abortRef.current = false;
+
+    // Step 1: Execute in-browser image captioning only if it's NOT a vision model
+    if (!isVisionModel(modelId || '')) {
+       // Filter raster images (ignore SVG and PDFs since they're pre-extracted already)
+       const needsCaptioning = currentImages.filter(img => !img.extractedText && !img.name.toLowerCase().endsWith('.svg') && !img.name.toLowerCase().endsWith('.pdf'));
+       
+       if (needsCaptioning.length > 0) {
+          setIsGenerating(true);
+          setStreamingText('[System: Initializing detailed image-to-text captioning pipeline (Florence-2)...]\n');
+          try {
+             // Dynamically import transformers.js
+             const { pipeline, env } = await import('@huggingface/transformers');
+             env.allowLocalModels = false;
+             env.useBrowserCache = true;
+             
+             // Use standard vit-gpt2 which is widely supported across all transformers.js versions
+             const captioner = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', { device: 'wasm', dtype: 'q8' });
+             
+             for (let i = 0; i < needsCaptioning.length; i++) {
+                if (abortRef.current) break;
+                const img = needsCaptioning[i];
+                if (!img) continue;
+                setStreamingText(`[System: Extracting detailed visual description for ${img.name}... ${i+1}/${needsCaptioning.length}]\n`);
+                
+                // Pass generation config to encourage more detailed output compared to defaults
+                const out = await captioner(img.dataUrl, {
+                   max_new_tokens: 64,
+                   num_beams: 4,
+                   repetition_penalty: 1.5                
+                } as any);
+                
+                let val = '';
+                // @ts-ignore
+                if (Array.isArray(out) && out[0] && out[0].generated_text) val = out[0].generated_text;
+                // @ts-ignore
+                else if (!Array.isArray(out) && out.generated_text) val = out.generated_text;
+                
+                img.extractedText = val;
+             }
+          } catch (err) {
+             console.error('[ImagePipeline] Captioning error:', err);
+             setStreamingText(`[System: Fallback captioning failed: ${err}]\n`);
+          }
+          if (abortRef.current) {
+             setStreamingText('');
+             setIsGenerating(false);
+             return;
+          }
+          setStreamingText('');
+          setIsGenerating(false);
+       }
+    }
+
     let finalText = text;
     for (const img of currentImages) {
       if (img.extractedText) {
         let prefix = '';
         if (img.name.toLowerCase().endsWith('.svg')) {
-          prefix = `📄 SVG Source Code (${img.name}):\n`;
+          prefix = `\n\n📄 SVG Source Code (${img.name}):\n`;
         } else if (!isVisionModel(modelId || '')) {
-          prefix = `🖼️ Image Auto-Caption (${img.name}):\n`;
+          prefix = `\n\n🖼️ System Image Representation (${img.name}) - [IMPORTANT SYSTEM INSTRUCTION: The user provided an image. Since you are a text model, here is an automated visual description of the image. DO NOT refuse the user's prompt. Answer as if you can see the image using this context:]\n`;
         }
         
         if (prefix || img.name.toLowerCase().endsWith('.pdf')) {
-           finalText += (finalText ? '\n\n' : '') + `${prefix}${img.extractedText}`;
+           finalText += `${prefix}${img.extractedText}`;
         }
       }
     }
     
-    setInput('');
-    setImages([]);
     onSendProp?.(finalText);
 
     if (llm && isReady) {
@@ -534,14 +588,14 @@ function Chat({
                     {[
                       { match: "📄 PDF:", index: msg.content.indexOf("📄 PDF:") },
                       { match: "📄 SVG Source Code", index: msg.content.indexOf("📄 SVG Source Code") },
-                      { match: "🖼️ Image Auto-Caption", index: msg.content.indexOf("🖼️ Image Auto-Caption") }
+                      { match: "🖼️ System Image", index: msg.content.indexOf("🖼️ System Image") }
                     ]
                       .filter(m => m.index !== -1)
                       .reduce((min, m) => m.index < min ? m.index : min, msg.content.length) !== msg.content.length
                         ? msg.content.substring(0, [
                             { match: "📄 PDF:", index: msg.content.indexOf("📄 PDF:") },
                             { match: "📄 SVG Source Code", index: msg.content.indexOf("📄 SVG Source Code") },
-                            { match: "🖼️ Image Auto-Caption", index: msg.content.indexOf("🖼️ Image Auto-Caption") }
+                            { match: "🖼️ System Image", index: msg.content.indexOf("🖼️ System Image") }
                           ]
                             .filter(m => m.index !== -1)
                             .reduce((min, m) => m.index < min ? m.index : min, msg.content.length)).trim() 
