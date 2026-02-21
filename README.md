@@ -326,18 +326,18 @@ Conditional rendering components:
 
 ### Default Chat Interface explained
 
-The `<Chat>` and `<ChatApp>` components provide a production-ready interface with "Terminal Luxury" aesthetics.
+The `<Chat>` and `<ChatApp>` components provide a production-ready, minimalist, borderless "Terminal" interface inspired by brutalist and sacred computer aesthetics.
 
 **Key Features & Usage Points:**
 
-- **✨ Zero Config**: Just drop it in. No CSS files to import, no state to manage.
+- **✨ Zero Config**: Just drop it in. No CSS files to import, no state to manage. All spacing, monospace typography, and layout are handled out-of-the-box.
 - **🎨 Rich Text Rendering**:
   - **Global Markdown**: Bold, cursives, lists, tables.
-  - **Code Blocks**: Syntax highlighting for 20+ languages.
+  - **Code Blocks**: Syntax highlighting for 20+ languages cleanly integrated without borders.
   - **Diagrams**: Renders `mermaid` diagrams automatically.
   - **Math**: Supports LateX expressions.
 - **⚡ Eager Interaction**: Users can type and send messages _while_ the model is still initializing. The chat controls the queue.
-- **🌗 Theming**: Built-in 'dark' (cherry red accents) and 'light' modes.
+- **🌗 Multimodal & Files**: Deeply integrated multimodal chat input. Simply drag and drop PDFs for automatic local text extraction, or drag-and-drop/paste images for seamless processing against vision models (e.g., `phi-3.5-vision`). WebLLM crash mitigations for dynamic image cropping are automatically handled.
 - **🔄 Model Switching**:
   - If using `<ChatApp />`, a model selector dropdown is included automatically.
   - If using `<Chat />`, pass `onModelChange` to enable the dropdown.
@@ -497,32 +497,19 @@ You can use either the **alias** (short name) or the **full model ID** when spec
 
 ### WebLLM Backend (WebGPU)
 
-| Alias                   | Model                        | Notes                       |
-| ----------------------- | ---------------------------- | --------------------------- |
-| `llama-3.2-1b`          | Llama 3.2 1B Instruct        | Compact, great quality      |
-| `llama-3.2-3b`          | Llama 3.2 3B Instruct        | Balanced                    |
-| `llama-3.1-8b`          | Llama 3.1 8B Instruct        | High quality                |
-| `llama-3.1-8b-1k`       | Llama 3.1 8B (1K ctx)        | Lower memory                |
-| `phi-3.5-mini`          | Phi 3.5 Mini Instruct        | **Default** — great balance |
-| `phi-3.5-mini-1k`       | Phi 3.5 Mini (1K ctx)        | Lower memory                |
-| `phi-3.5-vision`        | Phi 3.5 Vision               | Vision model                |
-| `qwen-2.5-0.5b`         | Qwen 2.5 0.5B                | Tiny, fast                  |
-| `qwen-2.5-1.5b`         | Qwen 2.5 1.5B                | Small                       |
-| `qwen-2.5-3b`           | Qwen 2.5 3B                  | Medium                      |
-| `qwen-2.5-7b`           | Qwen 2.5 7B                  | Large                       |
-| `qwen-2.5-coder-0.5b`   | Qwen 2.5 Coder 0.5B          | Code-focused                |
-| `qwen-2.5-coder-1.5b`   | Qwen 2.5 Coder 1.5B          | Code-focused                |
-| `gemma-2-2b`            | Gemma 2 2B                   | Google, efficient           |
-| `gemma-2-2b-1k`         | Gemma 2 2B (1K ctx)          | Lower memory                |
-| `gemma-2-9b`            | Gemma 2 9B                   | Large                       |
-| `smollm2-135m`          | SmolLM2 135M                 | Ultra lightweight           |
-| `smollm2-360m`          | SmolLM2 360M                 | Lightweight                 |
-| `smollm2-1.7b`          | SmolLM2 1.7B                 | Small                       |
-| `mistral-7b`            | Mistral 7B v0.3              | General purpose             |
-| `deepseek-r1-qwen-7b`   | DeepSeek R1 Distill Qwen 7B  | Reasoning                   |
-| `deepseek-r1-llama-8b`  | DeepSeek R1 Distill Llama 8B | Reasoning                   |
-| `hermes-3-llama-3.2-3b` | Hermes 3 Llama 3.2 3B        | Function calling            |
-| `hermes-3-llama-3.1-8b` | Hermes 3 Llama 3.1 8B        | Function calling            |
+The WebLLM backend supports **over 80+ WebGPU-accelerated models**, organized into major ecosystems. All models are strongly typed and natively supported:
+
+- **Microsoft Phi**: `phi-3.5-mini`, `phi-3.5-vision` (Multimodal support!), `phi-3-mini-4k`, `phi-2`, `phi-1.5`
+- **Meta Llama**: `llama-3.2-1b`/`3b`, `llama-3.1-8b`/`70b`, `llama-3-8b`/`70b`, `llama-2-7b`/`13b`
+- **Alibaba Qwen**: `qwen3` (`0.6b` to `8b`), `qwen-2.5` (`0.5b` to `7b`), `qwen-2.5-coder` (`0.5b` to `7b`), `qwen-2.5-math` (`1.5b`)
+- **Google Gemma**: `gemma-2-2b`, `gemma-2-9b`, `gemma-2-2b-jpn`, `gemma-2b`
+- **HuggingFace SmolLM2**: `smollm2-135m` (~360MB VRAM!), `smollm2-360m`, `smollm2-1.7b`
+- **Mistral & Ministral**: `mistral-7b` (v0.2/v0.3), `ministral-3-3b-base`/`reasoning`/`instruct`
+- **DeepSeek Reasoning**: `deepseek-r1-qwen-7b`, `deepseek-r1-llama-8b`
+- **NousResearch Hermes**: `hermes-3-llama-3.2-3b`/`3.1-8b`, `hermes-2-theta/pro-llama`, `hermes-pro/openhermes-mistral`
+- **Other**: `tinyllama-1.1b`, `redpajama-3b`, `stablelm-2-zephyr-1.6b`, `wizardmath-7b`
+
+_Note: Many models have `-1k` variants (e.g. `llama-3.1-8b-1k`) with smaller context windows intentionally configured to require significantly less VRAM on constrained devices._
 
 ### Transformers.js Backend (CPU / WASM)
 
