@@ -522,7 +522,7 @@ function Chat({
                     controls={streamdownControls}
                     parseMarkdownIntoBlocksFn={sanitizeMarkdownLanguageBlocks}
                   >
-                    {msg.content}
+                    {msg.content.includes("📄 PDF:") ? (msg.content.split("📄 PDF:")[0] || "").trim() : msg.content}
                   </Streamdown>
                 </div>
               </div>
