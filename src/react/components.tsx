@@ -382,14 +382,21 @@ function Chat({
 
     const currentImages = [...images];
     
+    let finalText = text;
+    for (const img of currentImages) {
+      if (img.extractedText) {
+        finalText += (finalText ? '\n\n' : '') + img.extractedText;
+      }
+    }
+    
     setInput('');
     setImages([]);
-    onSendProp?.(text);
+    onSendProp?.(finalText);
 
     if (llm && isReady) {
-      generate(text, messages, currentImages);
+      generate(finalText, messages, currentImages);
     } else if (isLoading) {
-      setPendingMessage(text);
+      setPendingMessage(finalText);
     }
   };
 

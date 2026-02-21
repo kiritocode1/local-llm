@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { useRef, useEffect, useCallback, useState } from 'react';
-import { Send, Square, ImagePlus, X, Paperclip } from 'lucide-react';
 
 export interface ImageAttachment {
   id: string;
   dataUrl: string;
   file: File;
   name: string;
+  extractedText?: string;
 }
 
 export interface ChatInputProps {
@@ -74,17 +74,65 @@ export function ChatInput({
           const arrayBuffer = e.target?.result as ArrayBuffer;
           if (!arrayBuffer) return;
           const pdfjsLib = await import('pdfjs-dist');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+          pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+            'pdfjs-dist/build/pdf.worker.min.mjs',
+            import.meta.url
+          ).toString();
           const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
           let fullText = '';
+          const maxPages = Math.min(pdf.numPages, 10);
+          
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
             const pageText = textContent.items.map((item: any) => item.str).join(' ');
             fullText += `--- Page ${i} ---\n${pageText}\n\n`;
           }
-          const newText = `[Extracted from ${file.name}]\n${fullText}`;
-          onChange(value ? `${value}\n\n${newText}` : newText);
+          
+          const newText = `📄 PDF: ${file.name} (${pdf.numPages} pages total, showing images for first ${maxPages} pages)\n\nExtracted Text:\n${fullText}`;
+
+          if (onImageAdd) {
+            for (let i = 1; i <= maxPages; i++) {
+              const page = await pdf.getPage(i);
+              const viewport = page.getViewport({ scale: 2.0 });
+              const canvas = document.createElement('canvas');
+              const context = canvas.getContext('2d');
+              if (context) {
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: context, viewport } as any).promise;
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                const arr = dataUrl.split(',');
+                if (arr.length > 1) {
+                  const mimeMatch = arr[0]?.match(/:(.*?);/);
+                  const mime = mimeMatch ? mimeMatch[1] : undefined;
+                  const base64Data = arr[1];
+                  
+                  if (mime && base64Data) {
+                    const bstr = atob(base64Data);
+                    let n = bstr.length;
+                    const u8arr = new Uint8Array(n);
+                    while (n--) {
+                      u8arr[n] = bstr.charCodeAt(n);
+                    }
+                    const imgFile = new File([u8arr], `__PDF__${file.name}__page${i}.jpg`, { type: mime });
+                    const id = Math.random().toString(36).substring(7);
+                    
+                    onImageAdd({ 
+                      id, 
+                      dataUrl, 
+                      file: imgFile, 
+                      name: imgFile.name,
+                      extractedText: i === 1 ? newText : undefined
+                    });
+                  }
+                }
+              }
+            }
+          } else {
+            onChange(value ? `${value}\n\n${newText}` : newText);
+          }
         } catch (err) {
           console.error('Error extracting PDF:', err);
         }
