@@ -3,7 +3,9 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { useLLM, type UseChatOptions, LLMProvider, type LLMProviderProps } from './core';
 import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-input';
 import { WEBLLM_MODELS, type SupportedModel } from '../models';
-import type { ChatMessage } from '../types';
+import type { ChatMessage, LoadProgress, GenerateOptions } from '../types';
+import type { LocalLLM } from '../core';
+import { createLLM } from '../core';
 
 import { RotateCcw, ChevronDown, AlertCircle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -25,6 +27,44 @@ import '../tailwind.css';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Utility to hack around WebLLM's hardcoded image embedding size.
+ * WebLLM v0.2.81 hardcodes `IMAGE_EMBED_SIZE = 1921`.
+ * In Phi-3.5-vision, this exact token count is achieved ONLY when you evaluate to a 4:3 crop (h=3, w=4).
+ * We resize and pad every image into a 1344x1008 canvas (which is 4 * 336-width and 3 * 336-height).
+ */
+async function resizeImageForWebLLM(dataUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const TARGET_W = 1344;
+      const TARGET_H = 1008;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = TARGET_W;
+      canvas.height = TARGET_H;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve(dataUrl);
+
+      // Fill with black padding 
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, TARGET_W, TARGET_H);
+
+      // Letterbox the original image
+      const scale = Math.min(TARGET_W / img.width, TARGET_H / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      const x = (TARGET_W - w) / 2;
+      const y = (TARGET_H - h) / 2;
+
+      ctx.drawImage(img, x, y, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.9));
+    };
+    img.onerror = () => resolve(dataUrl); // fallback if fails
+    img.src = dataUrl;
+  });
 }
 
 // Intercept the default streamdown blocks hook to sanitize malformed languages into supported codes.
@@ -299,22 +339,28 @@ function Chat({
       apiMessages.push({ role: 'system', content: finalSystemPrompt });
     }
 
-    currentMessages.forEach(m => {
+    for (const m of currentMessages) {
       let content: string | any[] = m.content;
       if (m.role === 'user' && m.images && m.images.length > 0 && isVisionModel(modelId || '')) {
+        const processedImages = await Promise.all(
+          m.images.map(img => resizeImageForWebLLM(img.dataUrl))
+        );
         content = [
           { type: 'text', text: m.content },
-          ...m.images.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+          ...processedImages.map(url => ({ type: 'image_url', image_url: { url } }))
         ] as any[];
       }
       apiMessages.push({ role: m.role as ChatMessage['role'], content });
-    });
+    }
 
     let finalUserContent: string | any[] = userContent;
     if (attachedImages.length > 0 && isVisionModel(modelId || '')) {
+      const processedImages = await Promise.all(
+        attachedImages.map(img => resizeImageForWebLLM(img.dataUrl))
+      );
       finalUserContent = [
         { type: 'text', text: userContent },
-        ...attachedImages.map(img => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+        ...processedImages.map(url => ({ type: 'image_url', image_url: { url } }))
       ] as any[];
     }
 
