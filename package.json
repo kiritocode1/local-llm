@@ -1,6 +1,6 @@
 {
   "name": "@blank-utils/llm",
-  "version": "0.4.21",
+  "version": "0.4.23",
   "description": "Run LLMs directly in your browser with WebGPU acceleration. Supports React hooks and eager background loading.",
   "type": "module",
   "main": "./dist/index.js",

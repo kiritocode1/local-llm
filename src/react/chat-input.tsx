@@ -8,6 +8,8 @@ export interface ImageAttachment {
   file: File;
   name: string;
   extractedText?: string;
+  isPdf?: boolean;
+  isSvg?: boolean;
 }
 
 export interface ChatInputProps {
@@ -125,7 +127,8 @@ export function ChatInput({
                       dataUrl, 
                       file: imgFile, 
                       name: imgFile.name,
-                      extractedText: i === 1 ? newText : undefined
+                      extractedText: i === 1 ? newText : undefined,
+                      isPdf: true
                     });
                   }
                 }
@@ -154,7 +157,8 @@ export function ChatInput({
              dataUrl, 
              file, 
              name: file.name,
-             extractedText: text
+             extractedText: text,
+             isSvg: true
            });
         }
       };

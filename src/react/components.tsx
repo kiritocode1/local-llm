@@ -389,7 +389,7 @@ function Chat({
     // Step 1: Execute in-browser image captioning only if it's NOT a vision model
     if (!isVisionModel(modelId || '')) {
        // Filter raster images (ignore SVG and PDFs since they're pre-extracted already)
-       const needsCaptioning = currentImages.filter(img => !img.extractedText && !img.name.toLowerCase().endsWith('.svg') && !img.name.toLowerCase().endsWith('.pdf'));
+       const needsCaptioning = currentImages.filter(img => !img.extractedText && !img.isSvg && !img.isPdf);
        
        if (needsCaptioning.length > 0) {
           setIsGenerating(true);
@@ -442,14 +442,14 @@ function Chat({
     for (const img of currentImages) {
       if (img.extractedText) {
         let prefix = '';
-        if (img.name.toLowerCase().endsWith('.svg')) {
+        if (img.isSvg) {
           prefix = `\n\n📄 SVG Source Code (${img.name}):\n`;
-        } else if (!isVisionModel(modelId || '')) {
+        } else if (!img.isPdf && !isVisionModel(modelId || '')) {
           prefix = `\n\n🖼️ System Image Representation (${img.name}) - [IMPORTANT SYSTEM INSTRUCTION: The user provided an image. Since you are a text model, here is an automated visual description of the image. DO NOT refuse the user's prompt. Answer as if you can see the image using this context:]\n`;
         }
         
-        if (prefix || img.name.toLowerCase().endsWith('.pdf')) {
-           finalText += `${prefix}${img.extractedText}`;
+        if (prefix || img.isPdf) {
+           finalText += `${prefix}${img.isPdf ? '\n\n' : ''}${img.extractedText}`;
         }
       }
     }
