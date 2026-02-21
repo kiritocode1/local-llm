@@ -37,6 +37,14 @@ bun add @blank-utils/llm
 
 > React is an **optional** peer dependency. The core API works without it.
 
+### Import Styles (React)
+
+If you are using the pre-built React components (`<Chat>`, `<ChatApp>`, `<ChatInput>`), be sure to import the bundled CSS in your entry file (e.g. `index.tsx`, `App.tsx`, or `layout.tsx`):
+
+```typescript
+import "@blank-utils/llm/index.css";
+```
+
 ---
 
 ## Quick Start
@@ -47,6 +55,7 @@ The fastest way to get started. `<ChatApp>` includes the provider, model managem
 
 ```tsx
 import { ChatApp } from "@blank-utils/llm/react";
+import "@blank-utils/llm/index.css"; // Required for UI styling
 
 export default function App() {
   return (
@@ -65,6 +74,7 @@ If you already have a provider or want more control, use the `<Chat>` component:
 
 ```tsx
 import { LLMProvider, Chat } from "@blank-utils/llm/react";
+import "@blank-utils/llm/index.css";
 
 export default function App() {
   return (
