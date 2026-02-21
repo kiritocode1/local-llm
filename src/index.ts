@@ -50,10 +50,6 @@ export {
   createWebLLMProvider,
   DEFAULT_WEBLLM_MODEL,
   WEBLLM_MODELS,
-  TransformersProvider,
-  createTransformersProvider,
-  DEFAULT_TRANSFORMERS_MODEL,
-  TRANSFORMERS_MODELS,
 
   // Helpers
   createOutputStreamer,

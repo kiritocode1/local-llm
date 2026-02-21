@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { useLLM, type UseChatOptions, LLMProvider, type LLMProviderProps } from './core';
 import { ChatInput, type ChatInputProps, type ImageAttachment } from './chat-input';
-import { WEBLLM_MODELS, TRANSFORMERS_MODELS, type SupportedModel } from '../models';
+import { WEBLLM_MODELS, type SupportedModel } from '../models';
 import type { ChatMessage } from '../types';
 
 import { RotateCcw, ChevronDown, AlertCircle } from 'lucide-react';
@@ -98,7 +98,7 @@ export interface ChatProps {
 
 export interface ChatAppProps extends ChatProps {
   defaultModel?: SupportedModel;
-  defaultBackend?: 'webllm' | 'transformers' | 'auto';
+  defaultBackend?: 'webllm';
   autoLoad?: boolean;
 }
 
@@ -124,7 +124,7 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful AI assistant.
     \`\`\`
 - You can use LaTeX math ($$ ... $$).`;
 
-const ALL_MODELS = { ...WEBLLM_MODELS, ...TRANSFORMERS_MODELS };
+const ALL_MODELS = { ...WEBLLM_MODELS };
 
 function isVisionModel(modelId: string): boolean {
   if (!modelId) return false;
@@ -220,21 +220,7 @@ function ModelSelector({
             </button>
           ))}
           
-          <div className="px-3 py-2 text-[10px] font-light text-current opacity-50 uppercase tracking-widest mt-4 border-b border-current/10 mb-1">Transformers.js</div>
-          {Object.entries(TRANSFORMERS_MODELS).map(([key, value]) => (
-            <button
-              key={key}
-              className={cn(
-                "block w-full text-left px-3 py-2.5 text-[11px] font-light uppercase tracking-widest truncate transition-colors text-current",
-                currentModel === value 
-                  ? (theme === 'dark' ? "bg-white text-black" : "bg-black text-white")
-                  : "hover:opacity-60"
-              )}
-              onClick={() => { onSelect(value); setIsOpen(false); }}
-            >
-              {key} {isVisionModel(value) && <span className="ml-2 text-[9px] opacity-50">[VISION]</span>}
-            </button>
-          ))}
+
         </div>
       )}
     </div>
@@ -672,7 +658,7 @@ function Chat({
 
 function ChatApp({
   defaultModel = 'qwen-2.5-0.5b',
-  defaultBackend = 'auto',
+  defaultBackend = 'webllm',
   autoLoad = true,
   onModelChange,
   ...chatProps

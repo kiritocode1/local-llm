@@ -10,7 +10,7 @@
 /**
  * Supported backend engines
  */
-export type Backend = 'webllm' | 'transformers' | 'auto';
+export type Backend = 'webllm';
 
 /**
  * Device to run inference on
@@ -31,7 +31,7 @@ export type { SupportedModel };
 export interface LLMConfig {
   /**
    * Model identifier. For WebLLM, use MLC model IDs.
-   * For Transformers.js, use HuggingFace model IDs.
+   * Use WebLLM compatible model IDs.
    * @default 'Phi-3-mini-4k-instruct-q4f16_1-MLC' for WebLLM
    */
   model?: SupportedModel;

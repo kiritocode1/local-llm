@@ -61,40 +61,9 @@ export const WEBLLM_MODELS = {
 } as const;
 
 
-/**
- * Default model for Transformers.js backend
- * Using Qwen2.5 0.5B as it's well-tested with ONNX
- */
-export const DEFAULT_TRANSFORMERS_MODEL = 'onnx-community/Qwen2.5-0.5B-Instruct';
-
-/**
- * Transformers.js compatible models (must have ONNX weights)
- * These are specifically converted for browser use via transformers.js
- * 
- * @see https://huggingface.co/onnx-community for more models
- */
-export const TRANSFORMERS_MODELS = {
-  // === Qwen 2.5 Models (Alibaba) - Excellent quality ===
-  'qwen-2.5-0.5b': 'onnx-community/Qwen2.5-0.5B-Instruct',
-  'qwen-2.5-1.5b': 'onnx-community/Qwen2.5-1.5B-Instruct',
-  'qwen-2.5-coder-0.5b': 'onnx-community/Qwen2.5-Coder-0.5B-Instruct',
-  'qwen-2.5-coder-1.5b': 'onnx-community/Qwen2.5-Coder-1.5B-Instruct',
-
-  // === Vision Models ===
-  'phi-3.5-vision': 'onnx-community/Phi-3.5-vision-instruct',
-
-  // === SmolLM2 Models (HuggingFace) - Ultra lightweight ===
-  'smollm2-135m': 'HuggingFaceTB/SmolLM2-135M-Instruct',
-  'smollm2-1.7b': 'HuggingFaceTB/SmolLM2-1.7B-Instruct',
-
-  // === Phi Models (Microsoft) ===
-  'phi-3-mini': 'Xenova/Phi-3-mini-4k-instruct',
-} as const;
-
 export type WebLLMModelID = keyof typeof WEBLLM_MODELS;
-export type TransformersModelID = keyof typeof TRANSFORMERS_MODELS;
 
 /**
  * Union of all supported model IDs for type safety
  */
-export type SupportedModel = WebLLMModelID | TransformersModelID | (string & {});
+export type SupportedModel = WebLLMModelID | (string & {});

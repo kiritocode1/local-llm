@@ -46,18 +46,8 @@ export async function detectCapabilities(): Promise<BrowserCapabilities> {
   const webgpu = await checkWebGPU();
   const wasm = checkWasm();
 
-  let recommendedBackend: Backend = 'transformers';
-  let recommendedDevice: Device = 'wasm';
-
-  if (webgpu) {
-    // WebGPU available - prefer WebLLM for best performance
-    recommendedBackend = 'webllm';
-    recommendedDevice = 'webgpu';
-  } else if (wasm) {
-    // WASM only - use Transformers.js with WASM backend
-    recommendedBackend = 'transformers';
-    recommendedDevice = 'wasm';
-  }
+  let recommendedBackend: Backend = 'webllm';
+  let recommendedDevice: Device = 'webgpu';
 
   return {
     webgpu,

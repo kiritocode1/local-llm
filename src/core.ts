@@ -34,13 +34,6 @@ export {
   WEBLLM_MODELS,
 } from './backends/webllm';
 
-export {
-  TransformersProvider,
-  createTransformersProvider,
-  DEFAULT_TRANSFORMERS_MODEL,
-  TRANSFORMERS_MODELS,
-} from './backends/transformers';
-
 // Re-export helpers
 export {
   createOutputStreamer,
@@ -60,7 +53,7 @@ import type {
 
 import { detectCapabilities } from './detect';
 import { WebLLMProvider, DEFAULT_WEBLLM_MODEL, WEBLLM_MODELS } from './backends/webllm';
-import { TransformersProvider, DEFAULT_TRANSFORMERS_MODEL, TRANSFORMERS_MODELS } from './backends/transformers';
+
 import { attachToElements } from './helpers';
 
 /**
@@ -80,7 +73,7 @@ export interface LocalLLM {
   /**
    * The backend being used
    */
-  readonly backend: 'webllm' | 'transformers';
+  readonly backend: 'webllm';
 
   /**
    * Generate a chat response
@@ -168,48 +161,23 @@ export async function createLLM(config: LLMConfig = {}): Promise<LocalLLM> {
   // Detect capabilities
   const capabilities = await detectCapabilities();
 
-  // Determine which backend to use based on requested and model capability
-  let useBackend: 'webllm' | 'transformers';
-
   const explicitModel = config.model;
-  const isWebLLMValue = explicitModel && (Object.values(WEBLLM_MODELS).includes(explicitModel as any) || Object.keys(WEBLLM_MODELS).includes(explicitModel as any));
-  const isTransformersValue = explicitModel && (Object.values(TRANSFORMERS_MODELS).includes(explicitModel as any) || Object.keys(TRANSFORMERS_MODELS).includes(explicitModel as any));
 
-  if (requestedBackend === 'auto') {
-    if (explicitModel && isTransformersValue && !isWebLLMValue) {
-      useBackend = 'transformers';
-    } else {
-      useBackend = capabilities.webgpu ? 'webllm' : 'transformers';
-    }
-  } else if (requestedBackend === 'webllm') {
-    if (!capabilities.webgpu) {
-      console.warn('[LocalLLM] WebLLM requested but WebGPU not available. Falling back to Transformers.js');
-      useBackend = 'transformers';
-    } else if (explicitModel && isTransformersValue && !isWebLLMValue) {
-      console.warn('[LocalLLM] Model specified is only compatible with Transformers.js. Falling back from explicit WebLLM.');
-      useBackend = 'transformers';
-    } else {
-      useBackend = 'webllm';
-    }
-  } else {
-    useBackend = 'transformers';
+  if (requestedBackend === 'webllm' && !capabilities.webgpu) {
+    console.warn('[LocalLLM] WebLLM requested but WebGPU not available. May fail.');
   }
 
+  const useBackend: 'webllm' = 'webllm';
+
   // Determine model
-  const model = config.model ?? (
-    useBackend === 'webllm' ? DEFAULT_WEBLLM_MODEL : DEFAULT_TRANSFORMERS_MODEL
-  );
+  const model = config.model ?? DEFAULT_WEBLLM_MODEL;
 
   console.log(`[LocalLLM] Using ${useBackend} backend with model: ${model}`);
 
   // Create provider
-  let provider: WebLLMProvider | TransformersProvider;
+  let provider: WebLLMProvider;
 
-  if (useBackend === 'webllm') {
-    provider = new WebLLMProvider();
-  } else {
-    provider = new TransformersProvider({ device, quantization });
-  }
+  provider = new WebLLMProvider();
 
   // Load model
   await provider.load(model, onLoadProgress);
