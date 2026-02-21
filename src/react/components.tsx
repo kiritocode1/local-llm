@@ -122,7 +122,8 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful AI assistant.
       B -- Yes --> C[Continue]
       B -- No --> D[Error]
     \`\`\`
-- You can use LaTeX math ($$ ... $$).`;
+- You can use LaTeX math ($$ ... $$).
+- IF you are provided an uploaded image, your primary task is strictly to analyze the contents of that specific image in natural language. Do not hallucinate that the user desires a Mermaid diagram unless they specifically ask for one.`;
 
 const ALL_MODELS = { ...WEBLLM_MODELS };
 
